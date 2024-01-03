@@ -5,7 +5,7 @@ dependencies=[
 'multiprocess']
 
 [build-system]
-requires = ["setuptools", "wheel", "scikit-build", "cmake", "Cython"]
+requires = ["setuptools", "wheel", "scikit-build", "cmake", "cython","numpy"]
 build-backend = "setuptools.build_meta"
 
 [project]
