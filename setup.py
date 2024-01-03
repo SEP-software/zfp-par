@@ -3,7 +3,7 @@ from setuptools import find_packages  # Add this import
 
 cmake_args = [
     '-DINSTALL_INCLUDE_FILES=NO',
-    '-DBUILD_ZFPY=YES',
+    '-DBUILD_PIP=YES',
     '-DZFP_WITH_OPENMP=yes'
 ]
 
