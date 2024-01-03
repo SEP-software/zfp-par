@@ -7,6 +7,7 @@ cmake_args = [
 
 setup(
     name="zfpy",
+    zip_safe=True,
     cmake_args=cmake_args,
     version="1.0.2",
     author="Peter Lindstrom, Danielle Asher",
