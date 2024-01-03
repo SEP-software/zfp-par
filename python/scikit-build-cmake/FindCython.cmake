@@ -55,6 +55,8 @@ else()
                DOC "path to the cython executable")
 endif()
 
+message(CYTHON_EXECUTALBE "I SEE tHIS")
+
 if(CYTHON_EXECUTABLE)
   set(CYTHON_version_command ${CYTHON_EXECUTABLE} --version)
 
