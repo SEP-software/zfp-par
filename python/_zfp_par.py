@@ -1,8 +1,9 @@
 import numpy as np
 from multiprocess import RawArray, Pool, cpu_count
 import math
-import zfpy  # Assuming this is the ZFP library you are using
-
+from zfpy._zfpy import(block_compression, zfp_chunkit,
+                       compress_numpy_portion, 
+                       decompress_numpy_portion)
 
 class zfp_p:
     def __init__(self, shape: tuple, dtype: np.dtype, est_compression_rate: float = 3,
@@ -65,8 +66,8 @@ class zfp_p:
         self._np_array = np.frombuffer(self._raw_arr, dtype=dtype).reshape(shape)
         
         # Process compression blocks and chunks
-        self._chunks = zfpy.block_compression(self._np_array, chunks_per_block, method)
-        self._chunkit = zfpy.zfp_chunkit(len(shape), list(shape), self._chunks, self._np_array.dtype)
+        self._chunks = block_compression(self._np_array, chunks_per_block, method)
+        self._chunkit = zfp_chunkit(len(shape), list(shape), self._chunks, self._np_array.dtype)
 
     def get_raw_array(self):
         """Return raw array representation"""
@@ -96,7 +97,7 @@ class zfp_p:
         # Wrap the shared RawArray in a NumPy array
         np_arr = np.frombuffer(shared_arr, dtype=chunkit.get_dtype()).reshape(chunkit.get_shape())
         # Compress the chunk
-        return zfpy.compress_numpy_portion(shared_arr, chunkit, ichunk, tolerance, rate, precision)
+        return compress_numpy_portion(shared_arr, chunkit, ichunk, tolerance, rate, precision)
 
 
     def compress(self,nthreads=-1,tolerance = -1,rate = -1,precision = -1):
@@ -132,7 +133,7 @@ class zfp_p:
         # Wrap the shared RawArray in a NumPy array
         np_arr = np.frombuffer(shared_arr, dtype=chunkit.get_dtype()).reshape(chunkit.get_shape())
         # Decompress the chunk
-        zfpy.decompress_numpy_portion(compress_data[ichunk], np_arr, chunkit, ichunk)
+        decompress_numpy_portion(compress_data[ichunk], np_arr, chunkit, ichunk)
 
     def decompress(self,nthreads=-1):
         """Compress array
