@@ -73,7 +73,7 @@ execute_process(
 
 
   if(NOT ${CYTHON_version_result} EQUAL 0)
-    set(_error_msg "Command \"${CYTHON_version_command}\" failed with")
+    set(_error_msg "C2ommand \"${CYTHON_version_command}\" failed with")
     set(_error_msg "${_error_msg} output:\n${CYTHON_version_error}")
     message(SEND_ERROR "${_error_msg}")
   else()
