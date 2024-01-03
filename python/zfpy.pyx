@@ -27,7 +27,7 @@ elif sys.version_info[0] == 3:
     from itertools import zip_longest
 
 cimport zfpy
-
+ 
 import numpy as np
 cimport numpy as np
 
