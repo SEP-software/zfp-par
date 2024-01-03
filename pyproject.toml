@@ -11,7 +11,7 @@ build-backend = "setuptools.build_meta"
 name = "zfpy"
 version = "1.0.2"
 description="zfp compression in Python"
-authors={ name="Peter Lindstrom, Danielle Asher", "email="zfp@llnl.gov"},
+authors=[{ name="Peter Lindstrom, Danielle Asher", email="zfp@llnl.gov"}]
 
 license = { text = "MIT License" }
 
