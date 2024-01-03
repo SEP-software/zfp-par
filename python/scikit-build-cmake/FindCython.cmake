@@ -44,6 +44,7 @@ elseif(DEFINED PYTHON_EXECUTABLE)
   get_filename_component(_python_path ${PYTHON_EXECUTABLE} PATH)
 endif()
 
+
 if(DEFINED _python_path)
   find_program(CYTHON_EXECUTABLE
                NAMES cython cython.bat cython3
