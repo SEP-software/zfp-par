@@ -9,6 +9,4 @@ description = "A short description of your package"
 authors = [
     { name = "Your Name", email = "your@email.com" },
 ]
-readme = "README.md"
-
-# Define other project metadata as needed
+license = { text = "MIT License" }

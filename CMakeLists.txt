@@ -327,14 +327,18 @@ if(BUILD_TESTING OR BUILD_TESTING_FULL)
   add_subdirectory(tests)
 endif()
 
+option(INSTALL_INCLUDE_FILES "Option to install header files" ON)
+
 #------------------------------------------------------------------------------#
 # Header install
 #------------------------------------------------------------------------------#
+if(INSTALL_INCLUDE_FILES)
 if(BUILD_CFP)
   install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 else()
   install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
           PATTERN "cfp" EXCLUDE)
+endif()
 endif()
 #------------------------------------------------------------------------------#
 # Build type: one of None, Debug, Release, RelWithDebInfo, MinSizeRel
