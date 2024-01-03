@@ -1,7 +1,7 @@
 import numpy as np
 from multiprocess import RawArray, Pool, cpu_count
 import math
-from zfpy.zfpy import(block_compression, zfp_chunkit,
+from zfpy_c import(block_compression, zfp_chunkit,
                        compress_numpy_portion, 
                        decompress_numpy_portion)
 
