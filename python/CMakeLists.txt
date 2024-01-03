@@ -17,7 +17,7 @@ include_directories(${ZFP_SOURCE_DIR}/include)
 include_directories(${NumPy_INCLUDE_DIR})
 
 add_cython_target(_zfpy _zfpy.pyx C PY3)
-add_library(_zfpy MODULE ${zfpy})
+add_library(_zfpy MODULE ${_zfpy})
 target_link_libraries(_zfpy zfp)
 python_extension_module(_zfpy)
 

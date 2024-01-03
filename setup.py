@@ -1,9 +1,10 @@
 from skbuild import setup
 cmake_args = [
-    '-DINSTALL_INCLUDE_FILES=NO'
-    "-DBUILD_ZFPY=YES",
-    "-DZFP_WITH_OPENMP=yes"
+    '-DINSTALL_INCLUDE_FILES=NO',
+    '-DBUILD_ZFPY=YES',
+    '-DZFP_WITH_OPENMP=yes'
 ]
+
 setup(
     name="zfpy",
     cmake_args=cmake_args,
