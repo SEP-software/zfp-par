@@ -30,6 +30,7 @@ set_target_properties(zfpy_c PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PYLIB_BUILD_D
 set(python_install_lib_dir "lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages/")
 
 if(BUILD_PIP)
+    message("IN THE REDIRECTION")
     set(python_install_lib_dir "zfpy")
 endif()
 install(TARGETS zfpy_c LIBRARY DESTINATION ${python_install_lib_dir})
