@@ -17,14 +17,14 @@ include_directories(${ZFP_SOURCE_DIR}/include)
 include_directories(${NumPy_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_cython_target(zfpy zfpy.pyx C PY3)
-add_library(zfpy MODULE ${zfpy})
-target_link_libraries(zfpy zfp)
-python_extension_module(zfpy)
+add_cython_target(zfpy_c zfpy.pyx C PY3)
+add_library(zfpy_c MODULE ${zfpy_c})
+target_link_libraries(zfpy_c zfp)
+python_extension_module(zfpy_c)
 
 # Build to the current binary dir to avoid conflicts with other libraries named zfp
 set(PYLIB_BUILD_DIR "${CMAKE_BINARY_DIR}/bin" CACHE PATH "Directory where zfp python library will be built")
-set_target_properties(zfpy PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PYLIB_BUILD_DIR})
+set_target_properties(zfpy_c PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PYLIB_BUILD_DIR})
 
 # Install to the typical python module directory
 set(python_install_lib_dir "lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages/")
@@ -32,4 +32,4 @@ set(python_install_lib_dir "lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_M
 if(BUILD_PIP)
     set(python_install_lib_dir "zfpy")
 endif()
-install(TARGETS zfpy LIBRARY DESTINATION ${python_install_lib_dir})
+install(TARGETS zfpy_c LIBRARY DESTINATION ${python_install_lib_dir})
