@@ -303,7 +303,13 @@ if(BUILD_ZFORP)
   add_subdirectory(fortran)
 endif()
 
+
+
 option(BUILD_ZFPY "Build python bindings for zfp" OFF)
+option(BUILD_PIP "Build using pip" OFF)
+if(BUILD_PIP)
+  set(BUILD_ZFPY ON)
+endif()
 if(BUILD_ZFPY)
   add_subdirectory(python)
   add_subdirectory(zfpy)

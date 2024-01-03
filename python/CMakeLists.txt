@@ -28,4 +28,8 @@ set_target_properties(zfpy PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PYLIB_BUILD_DIR
 
 # Install to the typical python module directory
 set(python_install_lib_dir "lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages/")
+
+if(BUILD_PIP)
+    set(python_install_lib_dir "zfpy")
+endif()
 install(TARGETS zfpy LIBRARY DESTINATION ${python_install_lib_dir})
