@@ -32,5 +32,7 @@ set(python_install_lib_dir "lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_M
 if(BUILD_PIP)
     message("IN THE REDIRECTION")
     set(python_install_lib_dir "zfpy")
+else(BUILD_PIP)
+    message("NO REDIRECTION???")
 endif()
 install(TARGETS zfpy_c LIBRARY DESTINATION ${python_install_lib_dir})
