@@ -17,7 +17,7 @@ include_directories(${ZFP_SOURCE_DIR}/include)
 include_directories(${NumPy_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_cython_target(zfpy_c zfpy.pyx C PY3)
+add_cython_target(zfpy_c zfpy_c.pyx C PY3)
 add_library(zfpy_c MODULE ${zfpy_c})
 target_link_libraries(zfpy_c zfp)
 python_extension_module(zfpy_c)
