@@ -59,14 +59,16 @@ endif()
 set(_error_msg "${CYTHON_EXECUTALBE} I SEE tHIS")
 
 if(CYTHON_EXECUTABLE)
-  set(CYTHON_version_command ${CYTHON_EXECUTABLE} --version)
+set(CYTHON_version_command ${CYTHON_EXECUTABLE} "--version")
 
-  execute_process(COMMAND ${CYTHON_version_command}
-                  OUTPUT_VARIABLE CYTHON_version_output
-                  ERROR_VARIABLE CYTHON_version_error
-                  RESULT_VARIABLE CYTHON_version_result
-                  OUTPUT_STRIP_TRAILING_WHITESPACE
-                  ERROR_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${CYTHON_version_command}
+                OUTPUT_VARIABLE CYTHON_version_output
+                ERROR_VARIABLE CYTHON_version_error
+                RESULT_VARIABLE CYTHON_version_result
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                ERROR_STRIP_TRAILING_WHITESPACE)
+
+
 
   if(NOT ${CYTHON_version_result} EQUAL 0)
     set(_error_msg "Command \"${CYTHON_version_command}\" failed with")
