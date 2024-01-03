@@ -1,7 +1,8 @@
 
 dependencies=[
 'cython>=0.22',
-'numpy>=1.8.0']
+'numpy>=1.8.0',
+'multiprocess']
 
 [build-system]
 requires = ["setuptools", "wheel", "scikit-build", "cmake", "Cython"]
