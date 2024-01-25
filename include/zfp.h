@@ -147,7 +147,7 @@ typedef struct {
   size_t ex, ey, ez, ew;   /*number of elements to do in block*/
 } zfp_chunk;
 
-/* uncompressed array; use accessors to get/set members */
+/* location begining/ends */
 typedef struct {
   size_t nchunks;
   zfp_chunk **chunks;
@@ -155,8 +155,9 @@ typedef struct {
 
 /*beginning and number of elements in each chunk*/
 typedef struct{
-  size_t nbeg;
-  size_t *begs;
+  size_t bx,by,bz,bw; //Block size in each dimension*/
+  int nbeg;
+  int *begs;
 } zfp_blocks;
 
 #ifdef __cplusplus
@@ -264,27 +265,25 @@ int zfp_break_axis(const int n,/*Number of elements in  axis*/
                 int *fwind, /*begining index for each block*/
                 int *ewind /*Number of elements per block*/
 );
-int zfp_optimal_parts_from_size(const int ndim,/*dimension*/
+zfp_blocks *zfp_optimal_parts_from_size(const int ndim,/*dimension*/
                    const int *n, /*elements in each dimension*/
                    const float chunks_per_block,/*Approximate chunks in each block*/
-                   const int method, /*Method (1-cache, 2-equal) */ 
-                   int *nchunk_out /*Number of chunks along each axis*/
+                   const int method /*Method (1-cache, 2-equal) */ 
 );
 /*Create chunk make for block size*/
 zfp_chunks *zfp_chunks_from_blocks(const int ndim, /*number of dimensions*/
                                 const int *nsize, /*length of each axis*/
-                                const int *nchunk_block/*chunks for each block*/
+                                const zfp_blocks *blocks
                                 );
 
 
 
-int zfp_break_into_blocks(const int ndim, /*number of dimensions*/
+zfp_blocks *zfp_break_into_blocks(const int ndim, /*number of dimensions*/
                        const int *nsize, /*size of dimenson*/ 
                        const int storage_per_block, /*amount of memory per block*/
                        const int elem_size, /*size of each elemnt*/ 
                        const float est_compression_rate, /*compression reate*/ 
-                       const int method, /*Method (1-cache, 2-equal) */
-                       int *nchunks_out /*output nblock size*/
+                       const int method /*Method (1-cache, 2-equal) */
 );                   
 
 /* high-level API: initialization of compressed stream parameters ---------- */
@@ -442,7 +441,7 @@ zfp_chunk_alloc(void);
 /*allocate file structiore*/
 zfp_blocks *zfp_blocks_alloc(void);
 
-zfp_blocks *zfp_blocks_alloc_begs(const size_t nblocks, const size_t *begs);
+//zfp_blocks *zfp_blocks_alloc_begs(const size_t nblocks, const size_t *begs);
 
 
 /*allocate number of */
@@ -700,16 +699,16 @@ zfp_omp_compress(
   zfp_stream* stream,    /* compressed stream */
   const zfp_field* field, /* field metadata */
   const int nthreads,/*number of threads to use*/
-  const int  *block_size,          /* chunk size */
   zfp_blocks *blocks /*block description*/
 
 );
+
+
 size_t                /* cumulative number of bytes of compressed storage */
 zfp_omp_decompress(
   zfp_stream* stream, /* compressed stream */
   zfp_field* field,    /* field metadata */
   const int nthreads,/*number of threads to use*/
-  const int  *block_size,          /* chunk size */
   const zfp_blocks *blocks   /*block description*/
 );
 #endif
@@ -763,7 +762,14 @@ zfp_decompress_call(
   const uint type /*data type*/
 );
 
-
+/*
+write compression parameters and field metadata */
+size_t                    /* number of bits written or zero upon failure */
+zfp_write_omp_header(
+  zfp_stream* stream,     /* compressed stream */
+  const zfp_field* field, /* field metadata */
+  const zfp_blocks *blocks /* information on blocks*/
+);
 /* write compression parameters and field metadata (optional) */
 size_t                    /* number of bits written or zero upon failure */
 zfp_write_header(
@@ -771,6 +777,16 @@ zfp_write_header(
   const zfp_field* field, /* field metadata */
   uint mask               /* information to write */
 );
+
+/* read compression parameters and field metadata when previously written */
+size_t                /* number of bits read or zero upon failure */
+zfp_read_omp_header(
+  zfp_stream* stream, /* compressed stream */
+  zfp_field* field,   /* field metadata */
+  zfp_blocks *blocks           /* information on blocks */
+);
+
+
 
 /* read compression parameters and field metadata when previously written */
 size_t                /* number of bits read or zero upon failure */

@@ -137,35 +137,45 @@ cdef zfp_field* _init_field(np.ndarray arr) except NULL:
 cdef class zfp_chunkit:
     cdef zfp_chunks *chunks
     cdef list ns_python 
-    cdef list ns_c 
     cdef size_t n123
-    cdef int ndim;
+    cdef int ndim
     cdef size_t nchunks
-    cdef int _size
     cdef object dtype
-    cdef readonly object _dtype_map,_dtype_size
+    cdef zfp_blocks *blocks
 
-    def __init__(self, int ndim, nsize, nchunks, dtype ):
+    def __init__(self, np.ndarray arr, float chunks_per_block, method="BEST_CACHE"):
+        self.ndim = arr.ndim
+        cdef int ndim = arr.ndim
+        cdef int* nsize_array = <int*>malloc(ndim * sizeof(int))
         self.ns_python = []
-        self.ns_c = []
         self.n123 = 1
-        # Convert Python lists or tuples to NumPy arrays and then to C arrays
-        cdef int[:] nsize_array = np.asarray(nsize[::-1], dtype=np.intc)  # Reversed
-        cdef int[:] nchunks_array = np.asarray(nchunks[::-1], dtype=np.intc)  # Reversed
-        cdef int _size
+        method_opts = {"BEST_CACHE": 1, "MAKE_EQUAL": 2}
+        method_c = method_opts.get(method, -1)
+        if not nsize_array:
+            raise MemoryError("Failed to allocate memory for nsize_array")
+        try:
+            for i in range(ndim):
+                nsize_array[i] = arr.shape[ndim - i - 1]
+            if method_c == -1:
+                raise ValueError(f"Invalid method '{method}'. Valid options are: {', '.join(method_opts.keys())}")
+            self.blocks = zfp_optimal_parts_from_size(self.ndim, &nsize_array[0], chunks_per_block, method_c)
+            if not self.blocks:
+                raise MemoryError("Failed to allocate zfp_blocks")
+            self.chunks = zfp_chunks_from_blocks(self.ndim, &nsize_array[0], self.blocks)
+            if not self.chunks:
+                raise MemoryError("Failed to allocate zfp_chunks")
+            for i in range(self.ndim):
+                self.n123 *= nsize_array[i]
+                self.ns_python.append(arr.shape[i])
+            self.dtype = arr.dtype
+        finally:
+            free(nsize_array)
 
-        for i in range(ndim):
-            self.ns_c.append(nsize_array[ndim - 1 - i])
-            self.ns_python.append(nsize_array[i])
-            self.n123 *= nsize_array[i]
-
-        # Use the C arrays as needed
-        self.chunks = zfp_chunks_from_blocks(ndim, &nsize_array[0], &nchunks_array[0])
-        if self.chunks is NULL:
-            raise MemoryError("Failed to allocate zfp_chunks")
-        self.nchunks=self.chunks.nchunks
-        self.ndim=ndim
-        self.dtype= dtype;
+    def __dealloc__(self):
+        if self.chunks:
+            zfp_chunks_free(self.chunks)
+        if self.blocks:
+            zfp_blocks_free(self.blocks)
 
 
     cpdef get_nchunks(self):
@@ -266,35 +276,6 @@ cdef class Memory:
         free(self.data)
 
 
-
-
-
-def block_compression(np.ndarray arr,  float chunks_per_block, method="BEST_CACHE"):
-    cdef int ndim = arr.ndim
-    cdef int* nsize = <int*>malloc(ndim * sizeof(int))
-    cdef int* nchunk_out = <int*>malloc(ndim * sizeof(int))
-    cdef int method_c
-    if not nsize:
-        raise MemoryError("Failed to allocate memory for nsize")
-    if not nchunk_out:
-        free(nsize)
-        raise MemoryError("Failed to allocate memory for nchunk_out")
-    try:
-        for i in range(ndim):
-            nsize[i] = arr.shape[ndim - i - 1]
-
-        method_opts = {"BEST_CACHE": 1, "MAKE_EQUAL": 2}
-        if method not in method_opts:
-            raise ValueError(f"Invalid method '{method}'. Valid options are: {', '.join(method_opts.keys())}")
-        method_c = method_opts[method]
-        # Assign value to chunks_per_block here
-        if 0 != zfp_optimal_parts_from_size(ndim, nsize, chunks_per_block, method_c, nchunk_out):
-            raise ValueError("Failed to calculate optimal size")
-        block_size = [nchunk_out[ndim - 1 - i] for i in range(ndim)]
-    finally:
-        free(nsize)
-        free(nchunk_out)
-        return block_size
 
 cpdef bytes compress_numpy(
     np.ndarray arr,

@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/testviews.dir/testviews.cpp.o -o ../bin/testviews  -Wl,-rpath,/home/jupyter/Src/zfp/src/_skbuild/linux-x86_64-3.10/cmake-build/lib ../lib/libzfp.so.1.0.1 /usr/lib/gcc/x86_64-linux-gnu/10/libgomp.so /usr/lib/x86_64-linux-gnu/libpthread.so 

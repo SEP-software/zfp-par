@@ -126,7 +126,7 @@ zfp_blocks *zfp_blocks_alloc(void){
 
 void zfp_alloc_nblocks(zfp_blocks *blocks,const size_t nblock){
   blocks->nbeg=nblock;
-  blocks->begs=(size_t*)malloc(sizeof(size_t)*(1+blocks->nbeg));
+  blocks->begs=(int*)malloc(sizeof(size_t)*(1+blocks->nbeg));
 
 }
 
@@ -528,16 +528,29 @@ zfp_field_set_metadata(zfp_field* field, uint64 meta)
   return zfp_true;
 }
 /*public function to break into blocks*/
-int zfp_break_into_blocks(const int ndim, const int *nsize, const int storage_per_block, const int elem_size, 
-                      const float est_compression_rate, const int method, int *nchunk_block) {
+zfp_blocks* zfp_break_into_blocks(const int ndim, const int *nsize, const int storage_per_block, const int elem_size, 
+                      const float est_compression_rate, const int method) {
     float approx_block_size = storage_per_block/(powf(2., (float) ndim) / est_compression_rate * elem_size);
-    int ierr = zfp_optimal_parts_from_size(ndim, nsize, approx_block_size, method, nchunk_block);
-    if(ierr != 0) return ierr;
-
+    return  zfp_optimal_parts_from_size(ndim, nsize, approx_block_size, method);
 }
 
-zfp_chunks *zfp_chunks_from_blocks(const int ndim, const int *nsize, const int *nchunk_block){
+zfp_chunks *zfp_chunks_from_blocks(const int ndim, const int *nsize, const zfp_blocks *blocks){
+    
 
+    int nchunk_block[4];
+    switch (ndim){
+     case 4:
+       nchunk_block[3]=blocks->bw;
+     case 3:
+       nchunk_block[3]=blocks->bz;
+     case 2:
+       nchunk_block[3]=blocks->by;
+     case 1:
+       nchunk_block[0]=blocks->bx;
+       break;
+    default:
+      return 0;
+    }
     int **fwind = malloc(ndim * sizeof(int*));
     int **ewind = malloc(ndim * sizeof(int*));
     int nblocks = 1;
@@ -592,17 +605,18 @@ zfp_chunks *zfp_chunks_from_blocks(const int ndim, const int *nsize, const int *
     return chunks;
 }
 
-int zfp_optimal_parts_from_size(const int ndim,/*dimension*/
+zfp_blocks *zfp_optimal_parts_from_size(const int ndim,/*dimension*/
                    const int *n, /*elements in each dimension*/
                    const float chunks_per_block,/*Approximate chunks in each block*/
-                   const int method, /*Method (1-cache, 2-equal) */ 
-                   int *nchunk_out /*Number of chunks along each axis*/
+                   const int method /*Method (1-cache, 2-equal) */ 
 ){
   int nchunk[4]={1,1,1,1};
   int chunck_size_out[4];
   int smallest_to_largest[4];
   int ntemp[4];
   size_t ntot=1;
+  zfp_blocks *zfp_b=zfp_blocks_alloc();
+
   for(int i=0; i < ndim; i++) {
     ntemp[i]=nchunk[i]=(int)((n[i]+3)/4);
     chunck_size_out[i]=1;
@@ -610,8 +624,20 @@ int zfp_optimal_parts_from_size(const int ndim,/*dimension*/
     ntot*=(size_t)nchunk[i];
   }
   if(ntot < chunks_per_block){
-    for(int i=0; i < ndim; i++) nchunk_out[i]=1;
-    return 0;
+    switch(ndim){
+      case 4:
+        zfp_b->bw=n[3];
+      case 3:
+        zfp_b->bz=n[2];
+      case 2:
+        zfp_b->by=n[1];
+      case 1:
+        zfp_b->bx=n[0];
+        break;
+    }
+    zfp_b->nbeg=1;
+    zfp_b->begs=(int*)malloc(sizeof(int)*2);
+    return zfp_b;
   }
   for (int i = 0; i < 4; i++) {
     for (int j = i + 1; j < 4; j++) {
@@ -630,7 +656,6 @@ int zfp_optimal_parts_from_size(const int ndim,/*dimension*/
   }
 
   if(method==ZFP_BEST_CACHE){
-    for(int i=1; i<4; i++) nchunk_out[i]=1;
     int found=0;
     int cur_chunk=1;
     int idim=0;
@@ -665,13 +690,26 @@ int zfp_optimal_parts_from_size(const int ndim,/*dimension*/
     }
   } 
   else{
-    return -1;
+    return zfp_b;
   }
-  for(int i=0; i<ndim; i++){
-     nchunk_out[i]=ceil((float)((int)(n[i]+3)/4)/(float)chunck_size_out[i]);
+  int nc=1;
+  switch(ndim){
+    case 4:
+      zfp_b->bw=ceil((float)((int)(n[3]+3)/4)/(float)chunck_size_out[3]);
+      nc*=zfp_b->bw;
+    case 3:
+       zfp_b->by=ceil((float)((int)(n[2]+3)/4)/(float)chunck_size_out[2]);
+      nc*=zfp_b->by;
+    case 2:
+      zfp_b->by=ceil((float)((int)(n[1]+3)/4)/(float)chunck_size_out[1]);
+      nc*=zfp_b->by;
+    case 1:
+      zfp_b->bx=ceil((float)((int)(n[0]+3)/4)/(float)chunck_size_out[0]);
+      nc*=zfp_b->bx;
+      break;
   }
-
-  return 0;
+  zfp_b->begs=(int*)malloc(sizeof(int)*(nc+1));
+  return zfp_b;
 }
 
 int zfp_break_axis(const int n, const int nparts,  int *fwind, int *ewind){
@@ -1508,7 +1546,20 @@ zfp_decompress_call(zfp_stream* zfp, const zfp_chunk *chunk, zfp_field* field,co
 
   return stream_size(zfp->stream);
 }
-
+size_t
+zfp_write_omp_header(zfp_stream* zfp, const zfp_field* field, const zfp_blocks *blocks)
+{
+  size_t bits=zfp_write_header(zfp,field,ZFP_HEADER_FULL);
+  stream_write_bits(zfp->stream, (uint64)blocks->bx, 32);
+  stream_write_bits(zfp->stream, (uint64)blocks->by, 32);
+  stream_write_bits(zfp->stream, (uint64)blocks->bz, 32);
+  stream_write_bits(zfp->stream, (uint64)blocks->bw, 32);
+  stream_write_bits(zfp->stream, (uint64)blocks->nbeg, 32);
+  bits+=160;
+  for(int i=0; i < blocks->nbeg+1; i++)
+  stream_write_bits(zfp->stream, (uint64)blocks->begs[i], 32);
+  return bits+32*(blocks->nbeg+1);
+}
 size_t
 zfp_write_header(zfp_stream* zfp, const zfp_field* field, uint mask)
 {
@@ -1543,6 +1594,23 @@ zfp_write_header(zfp_stream* zfp, const zfp_field* field, uint mask)
     bits += size;
   }
 
+  return bits;
+}
+
+size_t zfp_read_omp_header(zfp_stream *zfp,zfp_field *field, zfp_blocks *blocks)
+{
+ size_t bits=zfp_read_header(zfp,field,ZFP_HEADER_FULL);
+  uint64 meta = stream_read_bits(zfp->stream, ZFP_META_BITS);
+  blocks->bx=stream_read_bits(zfp->stream,32);
+  blocks->by=stream_read_bits(zfp->stream,32);
+  blocks->bz=stream_read_bits(zfp->stream,32);
+  blocks->bw=stream_read_bits(zfp->stream,32);
+  blocks->nbeg=stream_read_bits(zfp->stream,32);
+  bits+=160;
+  blocks->begs=(int*)malloc(sizeof(int)*(blocks->nbeg+1));
+  for(int i=0; i < blocks->nbeg+1; i++)
+    blocks->begs[i] = stream_read_bits(zfp->stream, 32);
+  bits+=32*(blocks->nbeg+1);
   return bits;
 }
 
@@ -1621,32 +1689,33 @@ zfp_omp_compress(
   zfp_stream* stream,    /* compressed stream */
   const zfp_field* field, /* field metadata */
   const int nthreads,/*number of threads to use*/
-  const int  *block_size,          /* chunk size */
   zfp_blocks *blocks /*size of parallel blocks*/
-
-
 ){
 
   uint ndims = zfp_field_dimensionality(field);
-  int *nsize=(int*) malloc(sizeof(int)*ndims);
+  int nsize[4],block_size[4];
 
   omp_set_num_threads(nthreads);
   switch (ndims){
      case 4:
        nsize[3]=field->nw;
+       block_size[3]=blocks->bw;
      case 3:
        nsize[2]=field->nz;
+       block_size[3]=blocks->bz;
      case 2:
        nsize[1]=field->ny;
+       block_size[3]=blocks->by;
      case 1:
        nsize[0]=field->nx;
+       block_size[0]=blocks->bx;
        break;
     default:
       return 0;
   }
 
 
-  zfp_chunks *chunks=zfp_chunks_from_blocks(ndims, nsize, block_size);
+  zfp_chunks *chunks=zfp_chunks_from_blocks(ndims, nsize, blocks);
 
 
   size_t *beg_stream=(size_t*)malloc(sizeof(size_t)*(1+chunks->nchunks));
@@ -1672,12 +1741,9 @@ zfp_omp_compress(
 
   
   bitstream* dst = zfp_stream_bit_stream(stream);
-  stream_rewind(dst);
+  //stream_rewind(dst);
 
   bitstream_offset offset = stream_wtell(dst);
-
-
-  zfp_alloc_nblocks(blocks,chunks->nchunks);
 
 
   /* flush each stream and concatenate if necessary */
@@ -1697,7 +1763,6 @@ zfp_omp_compress(
     free(beg_stream);
     free(streams);
     free(zstreams);
-    free(nsize);
     zfp_chunks_free(chunks);
 
     return offset/8;
@@ -1712,28 +1777,30 @@ zfp_omp_decompress(
   zfp_stream* stream, /* compressed stream */
   zfp_field* field,    /* field metadata */
   const int nthreads, /*number of threads to use*/
-  const int  *block_size,          /* chunk size */
   const zfp_blocks *blocks /*size of parallel blocks*/
 ){
 
    uint ndims = zfp_field_dimensionality(field);
-  int *nsize=(int*) malloc(sizeof(int)*ndims);
-
+  int block_size[4],nsize[4];
   omp_set_num_threads(nthreads);
   switch (ndims){
      case 4:
        nsize[3]=field->nw;
+       block_size[3]=blocks->bw;
      case 3:
        nsize[2]=field->nz;
+       block_size[3]=blocks->bz;
      case 2:
        nsize[1]=field->ny;
+       block_size[3]=blocks->by;
      case 1:
        nsize[0]=field->nx;
+       block_size[0]=blocks->bx;
        break;
     default:
       return 0;
   }
-  zfp_chunks *chunks=zfp_chunks_from_blocks(ndims, nsize, block_size);
+  zfp_chunks *chunks=zfp_chunks_from_blocks(ndims, nsize, blocks);
 
   bitstream **streams=(bitstream**) malloc(sizeof(bitstream*)*chunks->nchunks);
 
@@ -1752,7 +1819,6 @@ zfp_omp_decompress(
 
   free(streams);
   free(zstreams);
-  free(nsize);
   zfp_chunks_free(chunks);
   return blocks->begs[chunks->nchunks];
 }

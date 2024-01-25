@@ -1,0 +1,11 @@
+/home/jupyter/Src/zfp/src/_skbuild/linux-x86_64-3.10/cmake-install/lib/cmake/zfp/zfp-config.cmake
+/home/jupyter/Src/zfp/src/_skbuild/linux-x86_64-3.10/cmake-install/lib/cmake/zfp/zfp-config-version.cmake
+/home/jupyter/Src/zfp/src/_skbuild/linux-x86_64-3.10/cmake-install/lib/cmake/zfp/zfp-targets.cmake
+/home/jupyter/Src/zfp/src/_skbuild/linux-x86_64-3.10/cmake-install/lib/cmake/zfp/zfp-targets-release.cmake
+/home/jupyter/Src/zfp/src/_skbuild/linux-x86_64-3.10/cmake-install/lib/libzfp.so.1.0.1
+/home/jupyter/Src/zfp/src/_skbuild/linux-x86_64-3.10/cmake-install/lib/libzfp.so.1
+/home/jupyter/Src/zfp/src/_skbuild/linux-x86_64-3.10/cmake-install/lib/libzfp.so
+/home/jupyter/Src/zfp/src/_skbuild/linux-x86_64-3.10/cmake-install/zfpy/zfpy_c.cpython-310-x86_64-linux-gnu.so
+/home/jupyter/Src/zfp/src/_skbuild/linux-x86_64-3.10/cmake-install/zfpy/_zfp_par.py
+/home/jupyter/Src/zfp/src/_skbuild/linux-x86_64-3.10/cmake-install/zfpy/__init__.py
+/home/jupyter/Src/zfp/src/_skbuild/linux-x86_64-3.10/cmake-install/bin/zfp

@@ -66,8 +66,7 @@ class zfp_p:
         self._np_array = np.frombuffer(self._raw_arr, dtype=dtype).reshape(shape)
         
         # Process compression blocks and chunks
-        self._chunks = block_compression(self._np_array, chunks_per_block, method)
-        self._chunkit = zfp_chunkit(len(shape), list(shape), self._chunks, self._np_array.dtype)
+        self._chunkit = zfp_chunkit(self._np_array,  chunks_per_block, method)
 
     def get_raw_array(self):
         """Return raw array representation"""

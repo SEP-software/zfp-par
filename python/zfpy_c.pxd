@@ -39,6 +39,12 @@ cdef extern from "zfp.h":
     ctypedef struct zfp_chunks:
         size_t nchunks
         zfp_chunk **chunks
+   
+    ctypedef struct zfp_blocks:
+        int bx, by, bz, bw
+        int nbeg
+        int *begs
+
 
 
 
@@ -60,9 +66,6 @@ cdef extern from "zfp.h":
     size_t zfp_stream_maximum_size(const zfp_stream* stream, const zfp_field* field)
     size_t zfp_stream_maximum_size_chunk(const zfp_stream* stream, const zfp_field* field,
                                          zfp_chunk *chunk)
-    int zfp_break_into_blocks(int ndim, int* nsize, int storage_per_block, int elem_size,
-                          float est_compression_rate, int method, int *nparts_axis,
-                          int*** nblock_out, int*** fblock_out)
     void zfp_stream_rewind(zfp_stream* stream)
     void zfp_stream_set_bit_stream(zfp_stream* stream, bitstream* bs)
     void zfp_stream_set_reversible(zfp_stream* stream)
@@ -72,11 +75,13 @@ cdef extern from "zfp.h":
     zfp_mode zfp_stream_set_mode(zfp_stream* stream, stdint.uint64_t mode)
     zfp_mode zfp_stream_compression_mode(zfp_stream* stream)
     double zfp_stream_accuracy(zfp_stream* stream)
-    int zfp_optimal_parts_from_size(const int ndim , const int *n, const float chunks_per_block,const int method,   int *nchunk_out)
-    zfp_chunks *zfp_chunks_from_blocks(const int ndim, const int *nsize,const int *nchunk_block)
+    zfp_blocks *zfp_optimal_parts_from_size(const int ndim , const int *n, const float chunks_per_block,const int method)
+    zfp_chunks *zfp_chunks_from_blocks(const int ndim, const int *nsize,zfp_blocks *blocks)
     double zfp_stream_rate(zfp_stream* stream, cython.uint dims)
     cython.uint zfp_stream_precision(const zfp_stream* stream)
     zfp_chunk* zfp_chunk_alloc()
+    void zfp_chunks_free(zfp_chunks *chunks)
+    void zfp_blocks_free(zfp_blocks *blocks)
     zfp_field* zfp_field_alloc()
     zfp_field* zfp_field_1d(void* pointer, zfp_type, size_t nx)
     zfp_field* zfp_field_2d(void* pointer, zfp_type, size_t nx, size_t ny)
