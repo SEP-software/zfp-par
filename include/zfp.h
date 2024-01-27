@@ -693,6 +693,30 @@ zfp_compress(
 #ifdef _OPENMP
 #include <omp.h>
 
+size_t zfp_omp_compress_single(
+    zfp_stream* stream,    /* compressed stream */
+  const zfp_field* field, /* field metadata */
+  const int nthreads,/*number of threads to use*/
+  const float blocks_per_chunk, /*number of blocks per chunk*/
+  const int method /*method for compression*/
+);
+
+size_t zfp_omp_decompress_single(
+  zfp_stream* stream,    /* compressed stream */
+  zfp_field* field, /* field metadata */
+  const int nthreads/*number of threads to use*/
+);
+
+/* compress entire field (nonzero return value upon success) */
+size_t                   /* cumulative number of bytes of compressed storage */
+zfp_omp_compress_internal(
+  zfp_stream* stream,    /* compressed stream */
+  const zfp_field* field, /* field metadata */
+  const int nthreads,/*number of threads to use*/
+  zfp_blocks *blocks, /*block description*/
+  int write_headers /*whether or not to write headers*/
+);
+
 /* compress entire field (nonzero return value upon success) */
 size_t                   /* cumulative number of bytes of compressed storage */
 zfp_omp_compress(
@@ -700,7 +724,6 @@ zfp_omp_compress(
   const zfp_field* field, /* field metadata */
   const int nthreads,/*number of threads to use*/
   zfp_blocks *blocks /*block description*/
-
 );
 
 

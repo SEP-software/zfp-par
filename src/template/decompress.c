@@ -114,7 +114,8 @@ _t2(decompress_strided, Scalar, 4)(zfp_stream* stream, const zfp_chunk *chunk, z
   ptrdiff_t sz = field->sz ? field->sz : (ptrdiff_t)(nx * ny);
   ptrdiff_t sw = field->sw ? field->sw : (ptrdiff_t)(nx * ny * nz);
   size_t x, y, z, w;
-  //fprintf(stderr,"DECOMPRESS Starting at %d %d %d %d\n",fx,fy,fz,fw);
+
+
   /* decompress array one block of 4x4x4x4 values at a time */
   for (w = fw; w < ew; w += 4)
     for (z = fz; z < ez; z += 4)
@@ -126,4 +127,6 @@ _t2(decompress_strided, Scalar, 4)(zfp_stream* stream, const zfp_chunk *chunk, z
           else
             _t2(zfp_decode_block_strided, Scalar, 4)(stream, p, sx, sy, sz, sw);
         }
+
+
 }

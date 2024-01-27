@@ -1,7 +1,7 @@
 import numpy as np
 from multiprocess import RawArray, Pool, cpu_count
 import math
-from zfpy_c import(block_compression, zfp_chunkit,
+from zfpy_c import(zfp_chunkit,
                        compress_numpy_portion, 
                        decompress_numpy_portion)
 
@@ -33,6 +33,8 @@ class zfp_p:
             'int32': 4,
             'int64': 8,
         }
+        print("where i die aa1")
+        
 
         # Validate dtype
         if dtype not in np_type_to_code:
@@ -48,7 +50,7 @@ class zfp_p:
         for x in shape: 
             nblocks *= int((x + 3) / 4)
             n123 *= x
-            
+
         # Calculate chunks per block
         if block_size != -1:
             compress_block_size = math.pow(2, len(shape)) * np_type_to_size[dtype] / est_compression_rate
@@ -64,7 +66,7 @@ class zfp_p:
 
         # Create NumPy array view
         self._np_array = np.frombuffer(self._raw_arr, dtype=dtype).reshape(shape)
-        
+
         # Process compression blocks and chunks
         self._chunkit = zfp_chunkit(self._np_array,  chunks_per_block, method)
 

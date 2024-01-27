@@ -125,6 +125,7 @@ _t2(compress_strided, Scalar, 4)(zfp_stream* stream, const zfp_chunk *chunk, con
   size_t x, y, z, w;
   /* compress array one block of 4x4x4x4 values at a time */
 
+
   int ic = 0, ic1 = 0, ic2 = 0;
 
   for (w = fw; w < ew; w += 4)
@@ -152,4 +153,8 @@ _t2(compress_strided, Scalar, 4)(zfp_stream* stream, const zfp_chunk *chunk, con
       }
     }
   }
+  //stream_rewind(stream->stream);
+ // for(int i=0; i < 16; i++)
+  //  fprintf(stderr,"IN LOOP  %f %lld \n",(float)data[i],stream_read_bits(stream->stream,32));
+
 }
