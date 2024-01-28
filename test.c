@@ -2,9 +2,9 @@
 #define DIM2 500
 #define DIM3 1000
 #define DIM4 1000
-//#define DIM2 4
-//#define DIM3 4
-//#define DIM4 4
+#define DIM2 4
+#define DIM3 4
+#define DIM4 4
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -147,7 +147,7 @@ int main() {
     double blocks_per=1000.*1000./3./64.;
 zfp_blocks *zfp_b=zfp_optimal_parts_from_size(4,n,blocks_per,1);
     fprintf(stderr,"Avout to coompress\n");
-    fprintf(stderr,"ORIGINAL  %f \n",array[0][10][20][6]);
+    fprintf(stderr,"ORIGINAL  %f \n",array[0][0][0][0]);
 
     clock_gettime(CLOCK_MONOTONIC, &time3);
     //fprintf(stderr,"COMPRESSS %lld\n",zfp_compress(zfp,field));
@@ -158,11 +158,11 @@ zfp_blocks *zfp_b=zfp_optimal_parts_from_size(4,n,blocks_per,1);
     //fprintf(stderr,"DECOMPRESSS %lld\n",zfp_decompress(zfp,field2));
     clock_gettime(CLOCK_MONOTONIC, &time5);
     fflush(stderr);
-    fprintf(stderr,"xxx  %f \n",array[0][10][20][6]);
+    fprintf(stderr,"xxx  %f \n",array[0][0][0][0]);
  //   fprintf(stderr,"AAAP %lld\n",zfp_omp_compress(zfp,field,16,zfp_b));
 
    fprintf(stderr,"DOING SINGLE\n");
-    fprintf(stderr,"NNN OMP %lld\n",zfp_omp_compress_single(zfp,field,16,blocks_per,1));
+    fprintf(stderr,"NNN OMP %lld\n",zfp_blocks_compress_single_stream(zfp,field,16,blocks_per,1));
     
     fflush(stderr);
     stream_flush(stream);
@@ -173,10 +173,20 @@ zfp_blocks *zfp_b=zfp_optimal_parts_from_size(4,n,blocks_per,1);
      // fprintf(stderr,"DECOMPRESSS OMP %lld\n",zfp_omp_decompress(zfp,field2,16,zfp_b));
     stream_rewind(stream);
 
-    fprintf(stderr,"DECOMPRESSS SINGLE %lld\n",zfp_omp_decompress_single(zfp,field2,16));
-        fprintf(stderr,"yyy  %f \n",compare[0][10][20][6]);
+    fprintf(stderr,"DECOMPRESSS SINGLE %lld\n",zfp_blocks_decompress_single_stream(zfp,field2,16));
+        fprintf(stderr,"yyy  %f \n",compare[0][0][0][0]);
 
-    fprintf(stderr,"DECOMPRESSED OMP %f \n",compare[0][10][20][6]);
+    fprintf(stderr,"DECOMPRESSED OMP %f \n",compare[0][0][0][0]);
+
+
+    for(int i=0; i < 4; i++){
+    for(int j=0; j < 4; j++){
+    for(int k=0; k < 4; k++){
+    for(int l=0; l < 4; l++){
+	     fprintf(stderr, "COMPARE %d %d %d %d %f \n",i,j,k,l,compare[i][j][k][l]);
+    }}}}
+
+
     clock_gettime(CLOCK_MONOTONIC, &time7);
     // Free the allocated memory
     free_4d_array(array,DIM1,DIM2,DIM3);

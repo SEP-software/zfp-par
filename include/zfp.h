@@ -47,6 +47,7 @@
 #define ZFP_MODE_SHORT_BITS  12 /* number of mode bits in short format */
 #define ZFP_MODE_LONG_BITS   64 /* number of mode bits in long format */
 #define ZFP_HEADER_MAX_BITS 148 /* max number of header bits */
+#define ZFP_HEADER_BLOCKS_MAX_BITS 300
 #define ZFP_MODE_SHORT_MAX  ((1u << ZFP_MODE_SHORT_BITS) - 2)
 
 /* rounding mode for reducing bias; see build option ZFP_ROUNDING_MODE */
@@ -157,7 +158,7 @@ typedef struct {
 typedef struct{
   size_t bx,by,bz,bw; //Block size in each dimension*/
   int nbeg;
-  int *begs;
+  size_t *begs;
 } zfp_blocks;
 
 #ifdef __cplusplus
@@ -693,7 +694,7 @@ zfp_compress(
 #ifdef _OPENMP
 #include <omp.h>
 
-size_t zfp_omp_compress_single(
+size_t zfp_blocks_compress_single_stream(
     zfp_stream* stream,    /* compressed stream */
   const zfp_field* field, /* field metadata */
   const int nthreads,/*number of threads to use*/
@@ -701,7 +702,7 @@ size_t zfp_omp_compress_single(
   const int method /*method for compression*/
 );
 
-size_t zfp_omp_decompress_single(
+size_t zfp_blocks_decompress_single_stream(
   zfp_stream* stream,    /* compressed stream */
   zfp_field* field, /* field metadata */
   const int nthreads/*number of threads to use*/
@@ -734,6 +735,17 @@ zfp_omp_decompress(
   const int nthreads,/*number of threads to use*/
   const zfp_blocks *blocks   /*block description*/
 );
+
+/*Create a series of zfp streams*/
+zfp_stream **zfp_create_streams(const zfp_stream *zfp_in,
+                                const int nblocks, /*number of blocks*/
+                                const size_t *blocks_boundaries/*block boundaries*/
+                                );
+
+/*Free zfp streams (not bitstream memory)*/
+void zfp_streams_free(zfp_stream **streams, const int nblocks);
+
+
 #endif
 
 /* compress entire field (nonzero return value upon success) */
@@ -788,7 +800,7 @@ zfp_decompress_call(
 /*
 write compression parameters and field metadata */
 size_t                    /* number of bits written or zero upon failure */
-zfp_write_omp_header(
+zfp_write_blocks_header(
   zfp_stream* stream,     /* compressed stream */
   const zfp_field* field, /* field metadata */
   const zfp_blocks *blocks /* information on blocks*/
@@ -803,7 +815,7 @@ zfp_write_header(
 
 /* read compression parameters and field metadata when previously written */
 size_t                /* number of bits read or zero upon failure */
-zfp_read_omp_header(
+zfp_read_blocks_header(
   zfp_stream* stream, /* compressed stream */
   zfp_field* field,   /* field metadata */
   zfp_blocks *blocks           /* information on blocks */
@@ -1001,6 +1013,7 @@ void zfp_demote_int32_to_uint8(uint8* oblock, const int32* iblock, uint dims);
 void zfp_demote_int32_to_int16(int16* oblock, const int32* iblock, uint dims);
 void zfp_demote_int32_to_uint16(uint16* oblock, const int32* iblock, uint dims);
 
+int zfp_field_to_n(const zfp_field *field, int *n);
 #ifdef __cplusplus
 }
 #endif

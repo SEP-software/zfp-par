@@ -162,6 +162,7 @@ cdef class zfp_chunkit:
             if not self.blocks:
                 raise MemoryError("Failed to allocate zfp_blocks")
             self.chunks = zfp_chunks_from_blocks(self.ndim, &nsize_array[0], self.blocks)
+            self.nchunks=self.chunks.nchunks
             if not self.chunks:
                 raise MemoryError("Failed to allocate zfp_chunks")
             for i in range(self.ndim):
@@ -221,7 +222,7 @@ cdef zfp_field* init_field_raw(object py_raw_array, zfp_chunkit chunks) except N
     # Populate strides
     strides[0]=1
     for i in range(ndim-1):
-        strides[i+1] =strides[i]* chunks.ns_python[i]
+        strides[i+1] =strides[i]* shape_array[i]
      
     #int(chunks.ns_c[ndim - 1 - i]) // chunks._size
 
@@ -230,13 +231,13 @@ cdef zfp_field* init_field_raw(object py_raw_array, zfp_chunkit chunks) except N
             field = zfp_field_1d(pointer, ztype, shape_array[0])
             zfp_field_set_stride_1d(field, strides[0])
         elif ndim == 2:
-            field = zfp_field_2d(pointer, ztype, shape_array[1], shape_array[0])
+            field = zfp_field_2d(pointer, ztype, shape_array[0], shape_array[1])
             zfp_field_set_stride_2d(field, strides[0], strides[1])
         elif ndim == 3:
-            field = zfp_field_3d(pointer, ztype, shape_array[2], shape_array[1], shape_array[0])
+            field = zfp_field_3d(pointer, ztype, shape_array[0], shape_array[1], shape_array[2])
             zfp_field_set_stride_3d(field, strides[0], strides[1], strides[2])
         elif ndim == 4:
-            field = zfp_field_4d(pointer, ztype, shape_array[3], shape_array[2], shape_array[1], shape_array[0])
+            field = zfp_field_4d(pointer, ztype, shape_array[0], shape_array[1], shape_array[2], shape_array[3])
             zfp_field_set_stride_4d(field, strides[0], strides[1], strides[2], strides[3])
         else:
             raise RuntimeError("Greater than 4 dimensions not supported")

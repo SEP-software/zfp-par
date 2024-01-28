@@ -32,9 +32,7 @@ class zfp_p:
             'float64': 8,
             'int32': 4,
             'int64': 8,
-        }
-        print("where i die aa1")
-        
+        }        
 
         # Validate dtype
         if dtype not in np_type_to_code:
@@ -96,7 +94,7 @@ class zfp_p:
     @staticmethod
     def _compress_chunk(ichunk, tolerance, rate, precision):
         # Wrap the shared RawArray in a NumPy array
-        np_arr = np.frombuffer(shared_arr, dtype=chunkit.get_dtype()).reshape(chunkit.get_shape())
+        #np_arr = np.frombuffer(shared_arr, dtype=chunkit.get_dtype()).reshape(chunkit.get_shape())
         # Compress the chunk
         return compress_numpy_portion(shared_arr, chunkit, ichunk, tolerance, rate, precision)
 
@@ -114,7 +112,6 @@ class zfp_p:
         
         """Parallelized compress method."""
         self._compress_data = []
-
         # Initialize multiprocessing pool
         pool = Pool(processes=nthreads, initializer=self._pool_initializer, 
                     initargs=(self._raw_arr, self._chunkit))
@@ -134,8 +131,8 @@ class zfp_p:
         # Wrap the shared RawArray in a NumPy array
         np_arr = np.frombuffer(shared_arr, dtype=chunkit.get_dtype()).reshape(chunkit.get_shape())
         # Decompress the chunk
-        decompress_numpy_portion(compress_data[ichunk], np_arr, chunkit, ichunk)
 
+        decompress_numpy_portion(compress_data[ichunk], np_arr, chunkit, ichunk)
     def decompress(self,nthreads=-1):
         """Compress array
             nthreads - Number of threads to use (defaults to all)

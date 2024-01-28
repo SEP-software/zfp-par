@@ -24,8 +24,6 @@ _t2(compress_strided, Scalar, 1)(zfp_stream* stream, const zfp_chunk *chunk, con
   size_t fx = chunk->fx;
   ptrdiff_t sx = field->sx ? field->sx : 1;
   size_t x;
-  fprintf(stderr,"s2s \n");
-  fflush(stderr);
 
   /* compress array one block of 4 values at a time */
   for (x = fx; x < ex; x += 4) {
@@ -51,8 +49,7 @@ _t2(compress_strided, Scalar, 2)(zfp_stream* stream, const zfp_chunk *chunk,  co
   ptrdiff_t sx = field->sx ? field->sx : 1;
   ptrdiff_t sy = field->sy ? field->sy : (ptrdiff_t)nx;
   size_t x, y;
-  fprintf(stderr,"ss3 \n");
-  fflush(stderr);
+
 
   /* compress array one block of 4x4 values at a time */
   for (y = fy; y < ey; y += 4)
@@ -83,8 +80,7 @@ _t2(compress_strided, Scalar, 3)(zfp_stream* stream, const zfp_chunk *chunk, con
   ptrdiff_t sy = field->sy ? field->sy : (ptrdiff_t)nx;
   ptrdiff_t sz = field->sz ? field->sz : (ptrdiff_t)(nx * ny);
   size_t x, y, z;
-  fprintf(stderr,"SDJASDKS \n");
-  fflush(stderr);
+
 
   /* compress array one block of 4x4x4 values at a time */
   for (z = fz; z < ez; z += 4)
@@ -153,8 +149,5 @@ _t2(compress_strided, Scalar, 4)(zfp_stream* stream, const zfp_chunk *chunk, con
       }
     }
   }
-  //stream_rewind(stream->stream);
- // for(int i=0; i < 16; i++)
-  //  fprintf(stderr,"IN LOOP  %f %lld \n",(float)data[i],stream_read_bits(stream->stream,32));
 
 }
