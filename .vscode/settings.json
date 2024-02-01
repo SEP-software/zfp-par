@@ -6,6 +6,13 @@
         "initializer_list": "c",
         "ranges": "c",
         "utility": "c",
-        "*.tcc": "c"
+        "*.tcc": "c",
+        "time.h": "c",
+        "stdlib.h": "c",
+        "deque": "c",
+        "string": "c",
+        "unordered_map": "c",
+        "vector": "c",
+        "omp.h": "c"
     }
 }
