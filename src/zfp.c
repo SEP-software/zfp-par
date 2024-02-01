@@ -685,6 +685,7 @@ zfp_blocks *zfp_optimal_parts_from_size(const int ndim,               /*dimensio
     smallest_to_largest[i] = i;
     ntot *= (size_t)nchunk[i];
   }
+
   if (ntot < chunks_per_block)
   {
     switch (ndim)
@@ -701,7 +702,6 @@ zfp_blocks *zfp_optimal_parts_from_size(const int ndim,               /*dimensio
     }
     zfp_b->nbeg = 1;
     zfp_b->begs = (size_t *)malloc(sizeof(size_t) * 2);
-
     return zfp_b;
   }
   for (int i = 0; i < 4; i++)
@@ -1902,7 +1902,6 @@ zfp_streams *zfp_blocks_portions(zfp_stream *stream, const zfp_field *field, con
   block_size[2] = blocks->bz;
   block_size[1] = blocks->by;
   block_size[0] = blocks->bx;
-
   zfp_chunks *chunks = zfp_chunks_from_blocks(ndims, nsize, blocks);
 
   blocks->begs[0] = base_offset;
@@ -1932,11 +1931,11 @@ zfp_blocks_compress_internal(
     zfp_blocks *blocks      /*size of parallel blocks*/
 )
 {
-
   zfp_streams *zstreams = zfp_blocks_portions(stream, field, nthreads, blocks, stream_wtell(stream->stream) / 8);
   size_t offset = stream_wtell(stream->stream);
   bitstream *dst = zfp_stream_bit_stream(stream);
   // stream_rewind(dst);
+
   for (size_t ichunk = 0; ichunk < blocks->nbeg; ichunk++)
   {
     bitstream_size bits = stream_wtell(zstreams->streams[ichunk]->stream);
@@ -2025,7 +2024,6 @@ size_t zfp_blocks_compress_single_stream(
 
 )
 {
-
   zfp_streams *zstreams = zfp_blocks_compress(stream, field, nthreads, blocks_per_chunk, method, 1);
   bitstream *dst = stream->stream;
   size_t offset = stream_wtell(dst);
@@ -2069,10 +2067,12 @@ zfp_streams *zfp_blocks_compress(
 {
   int n[4], nblocks[4];
   int ndims = zfp_field_to_n(field, n);
-
   zfp_blocks *zfp_b = zfp_optimal_parts_from_size(ndims, n, blocks_per_chunk, method);
+
   int nchunks = zfp_total_chunks(ndims, zfp_b, nblocks);
+
   size_t bufsize = zfp_stream_maximum_size_blocks(stream, field, zfp_b);
+
   void *buffer = (void *)malloc(bufsize);
   bitstream *dst = stream_open(buffer, bufsize);
   zfp_stream_set_bit_stream(stream, dst);

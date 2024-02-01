@@ -1,6 +1,7 @@
 module zfp
 
-  use, intrinsic :: iso_c_binding, only: c_int, c_int64_t, c_size_t, c_ptrdiff_t, c_double, c_ptr, c_null_ptr, c_loc
+  use, intrinsic :: iso_c_binding, only: c_int, c_int64_t, c_size_t, c_ptrdiff_t, &
+     c_double, c_ptr, c_null_ptr, c_loc, c_float
   implicit none
   private
 
@@ -14,11 +15,6 @@ module zfp
     private
     type(c_ptr) :: object = c_null_ptr
   end type zFORp_stream
-
-  type, bind(c) :: zFORp_blocks
-    private
-    type(c_ptr) :: object = c_null_ptr
-  end type zFORp_blocks
 
   type, bind(c) :: zFORp_field
     private
@@ -328,22 +324,6 @@ module zfp
       type(c_ptr) :: field
     end function
 
-    function zfp_blocks_alloc() result(field) bind(c, name="zfp_blocks_alloc")
-      import
-      type(c_ptr) :: field
-    end function
-
-    function zfp_blocks_alloc_begs(nchunks,begs ) &
-       result(field) bind(c, name="zfp_blocks_alloc_begs")
-      import
-      type(c_ptr) :: field
-      integer(c_size_t), value :: nchunks
-      integer(c_size_t) :: begs(:)
-    end function
-
-
-    
-
     function zfp_field_1d(uncompressed_ptr, scalar_type, nx) result(field) bind(c, name="zfp_field_1d")
       import
       type(c_ptr), value :: uncompressed_ptr
@@ -515,34 +495,38 @@ module zfp
 
     ! high-level API: compression and decompression
 
-    function zfp_compress(stream, field) result(bitstream_offset_bytes) bind(c, name="zfp_compress")
+    function zfp_blocks_compress_single_stream(stream, field, &
+       nthreads, blocks_per_chunk,method) result(bitstream_offset_bytes) bind(c, name="zfp_blocks_compress_single_stream")
+      import
+      type(c_ptr), value :: stream, field
+      integer(c_int), value :: nthreads,method
+      real(c_float), value :: blocks_per_chunk
+      integer(c_size_t) :: bitstream_offset_bytes
+    end function
+
+    function zfp_blocks_decompress_single_stream(stream, field, nthreads)&
+       result(bitstream_offset_bytes) bind(c, name="zfp_blocks_decompress_single_stream")
+      import
+      type(c_ptr), value :: stream, field
+      integer(c_int), value :: nthreads
+      integer(c_size_t) :: bitstream_offset_bytes
+    end function
+
+    ! high-level API: compression and decompression
+
+    function zfp_compress(stream, field) result(bitstream_offset_bytes) &
+       bind(c, name="zfp_compress")
       import
       type(c_ptr), value :: stream, field
       integer(c_size_t) :: bitstream_offset_bytes
     end function
-
-    function zfp_omp_compress(stream, field, nthreads, block_size, &
-       blocks) result(bitstream_offset_bytes) bind(c, name="zfp_omp_compress")
-      import
-      type(c_ptr), value :: stream, field,blocks
-      integer(c_int) :: nthreads,block_size(:)
-      integer(c_size_t) :: bitstream_offset_bytes
-    end function
-
-    function zfp_omp_decompress(stream, field, nthreads, block_size, &
-       blocks) result(bitstream_offset_bytes) bind(c, name="zfp_omp_decompress")
-      import
-      type(c_ptr), value :: stream, field,blocks
-      integer(c_int) :: nthreads,block_size(:)
-      integer(c_size_t) :: bitstream_offset_bytes
-    end function
-
 
     function zfp_decompress(stream, field) result(bitstream_offset_bytes) bind(c, name="zfp_decompress")
       import
       type(c_ptr), value :: stream, field
       integer(c_size_t) :: bitstream_offset_bytes
     end function
+
 
     function zfp_write_header(stream, field, mask) result(num_bits_written) bind(c, name="zfp_write_header")
       import
@@ -664,9 +648,6 @@ module zfp
 
   ! high-level API: zfp_field functions
 
-  public:: zFORp_blocks_alloc, &
-           zFORp_blocks_free
-
   public :: zFORp_field_alloc, &
             zFORp_field_1d, &
             zFORp_field_2d, &
@@ -700,11 +681,10 @@ module zfp
 
   public :: zFORp_compress, &
             zFORp_decompress, &
-            zFORp_omp_compress, &
-            zFORp_omp_decompress, &
+            zFORp_blocks_compress_single_stream, &
+            zFORp_blocks_decompress_single_stream, &
             zFORp_write_header, &
             zFORp_read_header
-
 
 contains
 
@@ -939,21 +919,6 @@ contains
 
   ! high-level API: zfp_field functions
 
-  function zFORp_blocks_alloc() result(field) bind(c, name="zforp_blocks_alloc")
-    implicit none
-    type(zFORp_blocks) :: field
-    field%object = zfp_blocks_alloc()
-  end function zFORp_blocks_alloc
-
-
-  function zFORp_blocks_alloc_begs(nchunks,begs) &
-        result(field) bind(c, name="zforp_blocks_alloc_begs")
-    implicit none
-    type(zFORp_blocks) :: field
-    integer (kind=8) :: nchunks, begs(:)
-    field%object = zfp_blocks_alloc_begs(nchunks, begs)
-  end function zFORp_blocks_alloc_begs
-
   function zFORp_field_alloc() result(field) bind(c, name="zforp_field_alloc")
     implicit none
     type(zFORp_field) :: field
@@ -1003,12 +968,6 @@ contains
     call zfp_field_free(field%object)
     field%object = c_null_ptr
   end subroutine zFORp_field_free
-
-  subroutine zFORp_blocks_free(field) bind(c, name="zforp_blocks_free")
-    type(zFORp_blocks), intent(inout) :: field
-    call zfp_blocks_free(field%object)
-    field%object = c_null_ptr
-  end subroutine zFORp_blocks_free
 
   function zFORp_field_pointer(field) result(arr_ptr) bind(c, name="zforp_field_pointer")
     implicit none
@@ -1167,6 +1126,7 @@ contains
     type(zFORp_stream), intent(in) :: stream
     type(zFORp_field), intent(in) :: field
     integer (kind=8) :: bitstream_offset_bytes
+
     bitstream_offset_bytes = zfp_compress(stream%object, field%object)
   end function zFORp_compress
 
@@ -1178,30 +1138,30 @@ contains
     bitstream_offset_bytes = zfp_decompress(stream%object, field%object)
   end function zFORp_decompress
 
-  function zFORp_omp_compress(stream, field,nthreads, block_size, &
-       blocks) result(bitstream_offset_bytes) bind(c, name="zfp_omp_compress")
+  ! high-level API: compression and decompression
+
+  function zFORp_blocks_compress_single_stream(stream, field,&
+     nthreads,blocks_per,method) result(bitstream_offset_bytes) bind(c, name="zforp_blocks_compress_single_stream")
     implicit none
     type(zFORp_stream), intent(in) :: stream
     type(zFORp_field), intent(in) :: field
-    type(zFORp_blocks), intent(in) :: blocks
-    integer(kind=4), intent(in) :: nthreads, block_size(:)
     integer (kind=8) :: bitstream_offset_bytes
-    bitstream_offset_bytes = zfp_omp_compress(stream%object, field%object, &
-     nthreads,block_size,blocks%object)
-  end function zFORp_omp_compress
+    integer (kind=4) :: nthreads,method
+    real             :: blocks_per
+    bitstream_offset_bytes = zfp_blocks_compress_single_stream(stream%object, field%object,&
+     nthreads, blocks_per,method)
+  end function zFORp_blocks_compress_single_stream
 
-  function zFORp_omp_decompress(stream, field, nthreads, block_size, &
-       blocks) result(bitstream_offset_bytes) bind(c, name="zforp_omp_decompress")
+  function zFORp_blocks_decompress_single_stream(stream, field, nthreads) &
+     result(bitstream_offset_bytes) bind(c, name="zforp_blocks_decompress_single_stream")
     implicit none
     type(zFORp_stream), intent(in) :: stream
     type(zFORp_field), intent(in) :: field
-    type(zFORp_blocks), intent(in) :: blocks
+    integer (kind=4) :: nthreads
     integer (kind=8) :: bitstream_offset_bytes
-    integer(kind=4), intent(in) :: nthreads, block_size(:)
+    bitstream_offset_bytes = zfp_blocks_decompress_single_stream(stream%object, field%object, nthreads)
+  end function zFORp_blocks_decompress_single_stream
 
-    bitstream_offset_bytes = zfp_omp_decompress(stream%object, field%object, &
-     nthreads,block_size,blocks%object)
-  end function zFORp_omp_decompress
 
 
   function zFORp_write_header(stream, field, mask) result(num_bits_written) bind(c, name="zforp_write_header")
@@ -1221,6 +1181,5 @@ contains
     integer (kind=8) :: num_bits_read
     num_bits_read = zfp_read_header(stream%object, field%object, int(mask, c_int))
   end function zFORp_read_header
-
 
 end module zfp
