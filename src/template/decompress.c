@@ -51,7 +51,7 @@ _t2(decompress_strided, Scalar, 2)(zfp_stream* stream, const zfp_chunk *chunk, z
   size_t x, y;
 
   /* decompress array one block of 4x4 values at a time */
-      for (y = ey; y < ey; y += 4)
+      for (y = fy; y < ey; y += 4)
         for (x = fx; x < ex; x += 4) {
       Scalar* p = data + sx * (ptrdiff_t)x + sy * (ptrdiff_t)y;
       if (nx - x < 4 || ny - y < 4)
@@ -79,17 +79,25 @@ _t2(decompress_strided, Scalar, 3)(zfp_stream* stream,const zfp_chunk *chunk, zf
   ptrdiff_t sy = field->sy ? field->sy : (ptrdiff_t)nx;
   ptrdiff_t sz = field->sz ? field->sz : (ptrdiff_t)(nx * ny);
   size_t x, y, z;
-
   /* decompress array one block of 4x4x4 values at a time */
-    for (z = fz; z < ez; z += 4)
-      for (y = ey; y < ey; y += 4)
-        for (x = fx; x < ex; x += 4) {
+  for (z = fz; z < ez; z += 4){
+    for (y = fy; y < ey; y += 4)
+    {
+
+      for (x = fx; x < ex; x += 4)
+      {
+
         Scalar* p = data + sx * (ptrdiff_t)x + sy * (ptrdiff_t)y + sz * (ptrdiff_t)z;
-        if (nx - x < 4 || ny - y < 4 || nz - z < 4)
+        if (nx - x < 4 || ny - y < 4 || nz - z < 4){
           _t2(zfp_decode_partial_block_strided, Scalar, 3)(stream, p, MIN(nx - x, 4u), MIN(ny - y, 4u), MIN(nz - z, 4u), sx, sy, sz);
-        else
+
+        }
+        else{
           _t2(zfp_decode_block_strided, Scalar, 3)(stream, p, sx, sy, sz);
+        }
       }
+    }
+    }
 }
 
 /* decompress 4d strided array */

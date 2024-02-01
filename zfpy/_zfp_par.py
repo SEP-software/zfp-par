@@ -140,7 +140,7 @@ class zfp_p:
         
         if nthreads==-1:
             nthreads=cpu_count()
-            
+        print("IN",self._np_array[0,0,0])
         global compress_data
         compress_data = self._compress_data
         # Initialize multiprocessing pool
@@ -154,7 +154,8 @@ class zfp_p:
 
         # Close the pool and wait for tasks to complete
         pool.close()
-        pool.join()
+        pool.join()        
+        print("OUT",self._np_array[0,0,0])
 
 def write_json_header(filename, dimensions, block_splits, compressed_files):
     """

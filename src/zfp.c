@@ -1598,6 +1598,7 @@ zfp_decompress_chunk(zfp_stream *zfp, const zfp_chunk *chunk, zfp_field *field)
   default:
     return 0;
   }
+
   return zfp_decompress_call(zfp, chunk, field, exec, strided, dims, type);
 }
 size_t
