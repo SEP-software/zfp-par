@@ -1,0 +1,48 @@
+==167808== Memcheck, a memory error detector
+==167808== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==167808== Using Valgrind-3.16.1 and LibVEX; rerun with -h for copyright info
+==167808== Command: ./zfp.x
+==167808== 
+before compress 
+==167808== 
+==167808== Process terminating with default action of signal 2 (SIGINT)
+==167808==    at 0x4BE25C0: ??? (in /usr/lib/x86_64-linux-gnu/libgomp.so.1.0.0)
+==167808==    by 0x4BE0820: ??? (in /usr/lib/x86_64-linux-gnu/libgomp.so.1.0.0)
+==167808==    by 0x4BD84BC: GOMP_parallel (in /usr/lib/x86_64-linux-gnu/libgomp.so.1.0.0)
+==167808==    by 0x485DE1C: zfp_create_streams (zfp.c:1888)
+==167808==    by 0x485DF82: zfp_blocks_portions (zfp.c:1933)
+==167808==    by 0x485E298: zfp_blocks_compress (zfp.c:2102)
+==167808==    by 0x485E335: zfp_blocks_compress_single_stream (zfp.c:2048)
+==167808==    by 0x10A2B5: test_block_compression_single_stream (test.c:198)
+==167808==    by 0x1092B0: main (test.c:271)
+==167808== 
+==167808== HEAP SUMMARY:
+==167808==     in use at exit: 111,070,864 bytes in 1,663 blocks
+==167808==   total heap usage: 1,676 allocs, 13 frees, 111,104,800 bytes allocated
+==167808== 
+==167808== 4,320 bytes in 15 blocks are possibly lost in loss record 20 of 28
+==167808==    at 0x483AB65: calloc (vg_replace_malloc.c:760)
+==167808==    by 0x4012D16: allocate_dtv (dl-tls.c:343)
+==167808==    by 0x4012D16: _dl_allocate_tls (dl-tls.c:589)
+==167808==    by 0x4C16B81: allocate_stack (allocatestack.c:622)
+==167808==    by 0x4C16B81: pthread_create@@GLIBC_2.2.5 (pthread_create.c:660)
+==167808==    by 0x4BE03FA: ??? (in /usr/lib/x86_64-linux-gnu/libgomp.so.1.0.0)
+==167808==    by 0x4BD84BC: GOMP_parallel (in /usr/lib/x86_64-linux-gnu/libgomp.so.1.0.0)
+==167808==    by 0x485DE1C: zfp_create_streams (zfp.c:1888)
+==167808==    by 0x485DF82: zfp_blocks_portions (zfp.c:1933)
+==167808==    by 0x485E298: zfp_blocks_compress (zfp.c:2102)
+==167808==    by 0x485E335: zfp_blocks_compress_single_stream (zfp.c:2048)
+==167808==    by 0x10A2B5: test_block_compression_single_stream (test.c:198)
+==167808==    by 0x1092B0: main (test.c:271)
+==167808== 
+==167808== LEAK SUMMARY:
+==167808==    definitely lost: 0 bytes in 0 blocks
+==167808==    indirectly lost: 0 bytes in 0 blocks
+==167808==      possibly lost: 4,320 bytes in 15 blocks
+==167808==    still reachable: 111,066,544 bytes in 1,648 blocks
+==167808==         suppressed: 0 bytes in 0 blocks
+==167808== Reachable blocks (those to which a pointer was found) are not shown.
+==167808== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==167808== 
+==167808== For lists of detected and suppressed errors, rerun with: -s
+==167808== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)

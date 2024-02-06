@@ -1,7 +1,7 @@
-#define DIM1 128
-#define DIM2 128
-#define DIM3 128
-#define DIM4 4
+#define DIM1 8
+#define DIM2 100
+#define DIM3 100
+#define DIM4 146
 //#define DIM2 12
 //#define DIM3 12
 //#define DIM4 12
@@ -134,22 +134,33 @@ double microseconds_calc(struct timespec time2, struct timespec time1){
 
 compare_results compare_function(float ****input,float ****output){
   compare_results res;
-  int p1=0,p2=0,p3=0,p4=0;
-  sprintf(res.compare_string,"%d %d %d %d %f %f \n",p1,p2,p3,p4,
-    input[p1][p2][p3][p4],output[p1][p2][p3][p4]);
+  int p1=4,p2=54,p3=45,p4=31;
+  float max_err=0.;
+  float avg_err=0.;
+  for(int i4=0; i4 < DIM4; i4++)
+   for(int i3=0; i3 < DIM3; i3++)
+     for(int i2=0; i2 < DIM2; i2++)
+       for(int i1=0;i1 < DIM1; i1++){
+          float diff=fabs(input[p1][p2][p3][p4]-output[p1][p2][p3][p4]);
+          avg_err+=diff;
+          if(diff>max_err) max_err=diff;
+
+       }
+  sprintf(res.compare_string,"%d %d %d %d MAX_ERR=%f AVG=ERR=%f \n",p1,p2,p3,p4,
+    max_err,avg_err/(DIM1*DIM2*DIM3*DIM4));
   return res;
 }
 zfp_stream *create_stream(zfp_field *field){
 
     zfp_stream *zfp = zfp_stream_open(NULL);
-    zfp_stream_set_accuracy(zfp, 0.);
+    zfp_stream_set_accuracy(zfp, .02);
     return zfp;
 }
 
 zfp_field* zfp_field_from_floats(float ****array){
     zfp_field *field=zfp_field_alloc();
     zfp_field_set_type(field, zfp_type_float);
-    zfp_field_set_size_4d(field, DIM1,DIM2,DIM3,DIM4);
+    zfp_field_set_size_4d(field, DIM4,DIM3,DIM2,DIM1);
     zfp_field_set_pointer(field, &(array[0][0][0][0]));
     return field;
 }

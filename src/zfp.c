@@ -1792,6 +1792,7 @@ size_t zfp_read_blocks_header(zfp_stream *zfp, zfp_field *field, zfp_blocks *blo
 
     stream_rseek(zfp->stream,bits+56);
 
+
   return bits;
 }
 
