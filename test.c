@@ -1,7 +1,7 @@
-#define DIM1 4
-#define DIM2 500
-#define DIM3 1000
-#define DIM4 1000
+#define DIM1 128
+#define DIM2 128
+#define DIM3 128
+#define DIM4 4
 //#define DIM2 12
 //#define DIM3 12
 //#define DIM4 12
@@ -11,6 +11,7 @@
 #define _OPENMP 1
 #include <zfp.h>
 #include <time.h>
+#include <string.h>
 
 typedef struct {
   float decompress;
@@ -133,7 +134,7 @@ double microseconds_calc(struct timespec time2, struct timespec time1){
 
 compare_results compare_function(float ****input,float ****output){
   compare_results res;
-  int p1=0,p2=104,p3=150,p4=130;
+  int p1=0,p2=0,p3=0,p4=0;
   sprintf(res.compare_string,"%d %d %d %d %f %f \n",p1,p2,p3,p4,
     input[p1][p2][p3][p4],output[p1][p2][p3][p4]);
   return res;
@@ -141,7 +142,7 @@ compare_results compare_function(float ****input,float ****output){
 zfp_stream *create_stream(zfp_field *field){
 
     zfp_stream *zfp = zfp_stream_open(NULL);
-    zfp_stream_set_precision(zfp, 10);
+    zfp_stream_set_accuracy(zfp, 0.);
     return zfp;
 }
 
@@ -188,29 +189,40 @@ compare_results test_single_thread_compression(float ****input, float ****output
 compare_results test_block_compression_single_stream(float ****input, float ****output){
     zfp_field *inz =zfp_field_from_floats(input), 
               *outz=zfp_field_from_floats(output);
-    zfp_stream *zfp = create_stream(inz);
+    zfp_stream *zfp_in = create_stream(inz);
+    zfp_stream *zfp_out= create_stream(outz);
 
     struct timespec time1, time2, time3;
     clock_gettime(CLOCK_MONOTONIC, &time1);
-
-    fprintf(stderr,"return compress %lld \n",
-        zfp_blocks_compress_single_stream(zfp,inz,16, 1000.*1000./3./64.,1));
-        stream_rewind(zfp->stream);
+    fprintf(stderr,"before compress \n");
+    size_t buf_size=zfp_blocks_compress_single_stream(zfp_in,inz,16, 1000.*1000./3./64.,1);
     clock_gettime(CLOCK_MONOTONIC, &time2);
 
-    fprintf(stderr,"return decompress %lld \n",
-        zfp_blocks_decompress_single_stream(zfp,outz, 16));
+    void *buf_out=malloc(buf_size);
+    stream_rewind(zfp_in->stream);
+    memcpy(buf_out,(const void*)stream_data(zfp_in->stream),buf_size);
+
+    bitstream *stream=stream_open(buf_out,buf_size);
+    zfp_stream_set_bit_stream(zfp_out,stream);
+    free(stream_data(zfp_in->stream));
+    stream_close(zfp_in->stream);
+    zfp_stream_close(zfp_in);
+    fprintf(stderr,"before decompress \n");
+
+    clock_gettime(CLOCK_MONOTONIC, &time2);
+    size_t decompress_loc=zfp_blocks_decompress_single_stream(zfp_out,outz, 16);
     clock_gettime(CLOCK_MONOTONIC, &time3);
 
     compare_results res=compare_function(input,output);
     res.compress=microseconds_calc(time1,time2);
     res.decompress=microseconds_calc(time2,time3);
     compare_function(input,output);
+
     zfp_field_free(inz);
     zfp_field_free(outz);
-    free(stream_data(zfp->stream));
-    stream_close(zfp->stream);
-    zfp_stream_close(zfp);
+    free(buf_out);
+    stream_close(zfp_out->stream);
+    zfp_stream_close(zfp_out);
     return res;
 }
 

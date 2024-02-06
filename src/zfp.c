@@ -1271,6 +1271,7 @@ zfp_stream_set_mode(zfp_stream *zfp, uint64 mode)
     maxprec = (uint)(mode & 0x007fu) + 1;
     mode >>= 7;
     minexp = (int)(mode & 0x7fffu) - 16495;
+
   }
 
   if (!zfp_stream_set_params(zfp, minbits, maxbits, maxprec, minexp))
@@ -1665,19 +1666,26 @@ zfp_write_blocks_header(zfp_stream *zfp, const zfp_field *field, const zfp_block
   stream_write_bits(zfp->stream, (uint64)field->ny, 32);
   stream_write_bits(zfp->stream, (uint64)field->nz, 32);
   stream_write_bits(zfp->stream, (uint64)field->nw, 32);
-
   bits += 136;
+
   uint64 mode = zfp_stream_mode(zfp);
+
   uint size = mode > ZFP_MODE_SHORT_MAX ? ZFP_MODE_LONG_BITS : ZFP_MODE_SHORT_BITS;
+  size=64; 
   stream_write_bits(zfp->stream, mode, size);
   bits += size;
+
+
+
 
   stream_write_bits(zfp->stream, (uint64)blocks->nbeg, 32);
   stream_write_bits(zfp->stream, (uint64)blocks->bx, 32);
   stream_write_bits(zfp->stream, (uint64)blocks->by, 32);
   stream_write_bits(zfp->stream, (uint64)blocks->bz, 32);
   stream_write_bits(zfp->stream, (uint64)blocks->bw, 32);
-  bits += 160 + 64 * (blocks->nbeg + 1) + 44 /*put it on 64-bit word boundary*/;
+  bits+= 160;
+
+  bits += 64 * (blocks->nbeg + 1)+56 ; /*put it on 64-bit word boundary*/;
 
   size_t use_offset = 0;
   if (begs_after_header == 1)
@@ -1727,6 +1735,7 @@ zfp_write_header(zfp_stream *zfp, const zfp_field *field, uint mask)
   {
 
     uint64 mode = zfp_stream_mode(zfp);
+  
     uint size = mode > ZFP_MODE_SHORT_MAX ? ZFP_MODE_LONG_BITS : ZFP_MODE_SHORT_BITS;
     stream_write_bits(zfp->stream, mode, size);
     bits += size;
@@ -1745,7 +1754,9 @@ size_t zfp_read_blocks_header(zfp_stream *zfp, zfp_field *field, zfp_blocks *blo
       stream_read_bits(zfp->stream, 8) != zfp_codec_version)
     return 0;
 
+
   bits += ZFP_MAGIC_BITS;
+
   field->type = stream_read_bits(zfp->stream, 8);
   field->nx = stream_read_bits(zfp->stream, 32);
   field->ny = stream_read_bits(zfp->stream, 32);
@@ -1753,8 +1764,11 @@ size_t zfp_read_blocks_header(zfp_stream *zfp, zfp_field *field, zfp_blocks *blo
   field->nw = stream_read_bits(zfp->stream, 32);
   bits += 136;
 
-  uint64 mode = stream_read_bits(zfp->stream, ZFP_MODE_SHORT_BITS);
-  bits += ZFP_MODE_SHORT_BITS;
+
+  uint64 mode = stream_read_bits(zfp->stream,64);
+  bits += 64;
+ 
+ 
   if (zfp_stream_set_mode(zfp, mode) == zfp_mode_null)
     return 0;
 
@@ -1764,8 +1778,9 @@ size_t zfp_read_blocks_header(zfp_stream *zfp, zfp_field *field, zfp_blocks *blo
   blocks->by = stream_read_bits(zfp->stream, 32);
   blocks->bz = stream_read_bits(zfp->stream, 32);
   blocks->bw = stream_read_bits(zfp->stream, 32);
-
   bits += 160;
+
+
   blocks->begs = (size_t *)malloc(sizeof(size_t) * (blocks->nbeg + 1));
   for (int i = 0; i < blocks->nbeg + 1; i++)
   {
@@ -1774,6 +1789,9 @@ size_t zfp_read_blocks_header(zfp_stream *zfp, zfp_field *field, zfp_blocks *blo
   }
 
   bits += 64 * (blocks->nbeg + 1);
+
+    stream_rseek(zfp->stream,bits+56);
+
   return bits;
 }
 
@@ -1904,12 +1922,11 @@ zfp_streams *zfp_blocks_portions(zfp_stream *stream, const zfp_field *field, con
   block_size[1] = blocks->by;
   block_size[0] = blocks->bx;
   zfp_chunks *chunks = zfp_chunks_from_blocks(ndims, nsize, blocks);
-
   blocks->begs[0] = base_offset;
 
-  for (size_t i = 0; i < chunks->nchunks; i++)
+  for (size_t i = 0; i < chunks->nchunks; i++){
     blocks->begs[i + 1] = blocks->begs[i] + zfp_stream_maximum_size_chunk(stream, field, chunks->chunks[i]);
-
+  }
   zfp_streams *zstreams = zfp_create_streams(stream, chunks->nchunks, blocks->begs);
 #pragma omp parallel for
   for (int ichunk = 0; ichunk < chunks->nchunks; ichunk++)
@@ -2025,7 +2042,8 @@ size_t zfp_blocks_compress_single_stream(
 
 )
 {
-  zfp_streams *zstreams = zfp_blocks_compress(stream, field, nthreads, blocks_per_chunk, method, 1);
+  zfp_streams *zstreams = zfp_blocks_compress(stream, field, 
+       nthreads, blocks_per_chunk, method, 1);
   bitstream *dst = stream->stream;
   size_t offset = stream_wtell(dst);
 
@@ -2099,16 +2117,22 @@ size_t zfp_blocks_decompress_single_stream(
     const int nthreads  /*number of threads to use*/
 )
 {
+
   zfp_blocks *zfp_b = zfp_blocks_alloc();
+
   zfp_read_blocks_header(stream, field, zfp_b);
+
 
   int nsize[4];
   omp_set_num_threads(nthreads);
   int ndims = zfp_field_to_n(field, nsize);
 
+
   zfp_chunks *chunks = zfp_chunks_from_blocks(ndims, nsize, zfp_b);
 
+
   zfp_streams *zstreams = zfp_create_streams(stream, chunks->nchunks, zfp_b->begs);
+
 
   size_t loc = zfp_blocks_decompress_multi_stream(stream, field, zstreams, nthreads);
 

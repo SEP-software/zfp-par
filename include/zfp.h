@@ -47,7 +47,7 @@
 #define ZFP_MODE_SHORT_BITS  12 /* number of mode bits in short format */
 #define ZFP_MODE_LONG_BITS   64 /* number of mode bits in long format */
 #define ZFP_HEADER_MAX_BITS 148 /* max number of header bits */
-#define ZFP_HEADER_BLOCKS_MAX_BITS 384
+#define ZFP_HEADER_BLOCKS_MAX_BITS 448
 #define ZFP_MODE_SHORT_MAX  ((1u << ZFP_MODE_SHORT_BITS) - 2)
 
 /* rounding mode for reducing bias; see build option ZFP_ROUNDING_MODE */
