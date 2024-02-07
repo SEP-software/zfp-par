@@ -1108,7 +1108,6 @@ zfp_stream_maximum_size_chunk(const zfp_stream *zfp, const zfp_field *field, con
   maxbits += values - 1 + values * MIN(zfp->maxprec, zfp_field_precision(field));
   maxbits = MIN(maxbits, zfp->maxbits);
   maxbits = MAX(maxbits, zfp->minbits);
-
   return ((blocks * maxbits + stream_word_bits - 1) & ~(stream_word_bits - 1)) / CHAR_BIT;
 }
 size_t zfp_stream_maximum_size_blocks(const zfp_stream *zfp, const zfp_field *field, const zfp_blocks *blocks)
@@ -1693,6 +1692,7 @@ zfp_write_blocks_header(zfp_stream *zfp, const zfp_field *field, const zfp_block
   for (int i = 0; i < blocks->nbeg + 1; i++)
   {
     stream_write_bits(zfp->stream, (uint64)(use_offset + blocks->begs[i]), 64);
+
   }
 
   stream_flush(zfp->stream);
@@ -1926,7 +1926,7 @@ zfp_streams *zfp_blocks_portions(zfp_stream *stream, const zfp_field *field, con
   blocks->begs[0] = base_offset;
 
   for (size_t i = 0; i < chunks->nchunks; i++){
-    blocks->begs[i + 1] = blocks->begs[i] + zfp_stream_maximum_size_chunk(stream, field, chunks->chunks[i]);
+    blocks->begs[i + 1] = blocks->begs[i] + CHAR_BIT*zfp_stream_maximum_size_chunk(stream, field, chunks->chunks[i]);
   }
   zfp_streams *zstreams = zfp_create_streams(stream, chunks->nchunks, blocks->begs);
 #pragma omp parallel for
@@ -2051,13 +2051,13 @@ size_t zfp_blocks_compress_single_stream(
   for (size_t ichunk = 0; ichunk < zstreams->nstreams; ichunk++)
   {
 
-    stream_flush(zstreams->streams[ichunk]->stream);
+    //stream_flush(zstreams->streams[ichunk]->stream);
     size_t bits = stream_wtell(zstreams->streams[ichunk]->stream);
     stream_rewind(zstreams->streams[ichunk]->stream);
     stream_copy(dst, zstreams->streams[ichunk]->stream, bits);
     offset += bits;
   }
-
+ 
   stream_wseek(dst, offset);
 
   zfp_streams_free(zstreams);
@@ -2090,7 +2090,6 @@ zfp_streams *zfp_blocks_compress(
   zfp_blocks *zfp_b = zfp_optimal_parts_from_size(ndims, n, blocks_per_chunk, method);
 
   int nchunks = zfp_total_chunks(ndims, zfp_b, nblocks);
-
   size_t bufsize = zfp_stream_maximum_size_blocks(stream, field, zfp_b);
 
   void *buffer = (void *)malloc(bufsize);
@@ -2102,11 +2101,13 @@ zfp_streams *zfp_blocks_compress(
   zfp_b->begs[0] = 0;
   for (size_t ichunk = 0; ichunk < zfp_b->nbeg; ichunk++)
   {
+    stream_flush(zstreams->streams[ichunk]->stream);
     bitstream_size bits = stream_wtell(zstreams->streams[ichunk]->stream);
     zfp_b->begs[ichunk + 1] = zfp_b->begs[ichunk] + bits;
   }
 
   zfp_write_blocks_header(stream, field, zfp_b, begs_after_header);
+
 
   zfp_blocks_free(zfp_b);
   return zstreams;

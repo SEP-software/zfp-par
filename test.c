@@ -1,7 +1,7 @@
-#define DIM1 8
-#define DIM2 100
-#define DIM3 100
-#define DIM4 146
+#define DIM1 150
+#define DIM2 150
+#define DIM3 150
+#define DIM4 8
 //#define DIM2 12
 //#define DIM3 12
 //#define DIM4 12
@@ -141,10 +141,11 @@ compare_results compare_function(float ****input,float ****output){
    for(int i3=0; i3 < DIM3; i3++)
      for(int i2=0; i2 < DIM2; i2++)
        for(int i1=0;i1 < DIM1; i1++){
-          float diff=fabs(input[p1][p2][p3][p4]-output[p1][p2][p3][p4]);
+          float diff=fabs(input[i1][i2][i3][i4]-output[i1][i2][i3][i4]);
           avg_err+=diff;
-          if(diff>max_err) max_err=diff;
-
+          if(diff>max_err) {
+            max_err=diff;
+          }
        }
   sprintf(res.compare_string,"%d %d %d %d MAX_ERR=%f AVG=ERR=%f \n",p1,p2,p3,p4,
     max_err,avg_err/(DIM1*DIM2*DIM3*DIM4));
@@ -153,7 +154,9 @@ compare_results compare_function(float ****input,float ****output){
 zfp_stream *create_stream(zfp_field *field){
 
     zfp_stream *zfp = zfp_stream_open(NULL);
-    zfp_stream_set_accuracy(zfp, .02);
+//    zfp_stream_set_accuracy(zfp, .00);
+        zfp_stream_set_precision(zfp, 10);
+
     return zfp;
 }
 
@@ -206,7 +209,7 @@ compare_results test_block_compression_single_stream(float ****input, float ****
     struct timespec time1, time2, time3;
     clock_gettime(CLOCK_MONOTONIC, &time1);
     fprintf(stderr,"before compress \n");
-    size_t buf_size=zfp_blocks_compress_single_stream(zfp_in,inz,16, 1000.*1000./3./64.,1);
+    size_t buf_size=zfp_blocks_compress_single_stream(zfp_in,inz,16, 1.,1);
     clock_gettime(CLOCK_MONOTONIC, &time2);
 
     void *buf_out=malloc(buf_size);

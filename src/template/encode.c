@@ -1,5 +1,5 @@
 #include <limits.h>
-
+#include <stdio.h>
 static void _t2(fwd_xform, Int, DIMS)(Int* p);
 
 /* private functions ------------------------------------------------------- */
@@ -141,7 +141,6 @@ _t1(encode_many_ints, UInt)(bitstream* restrict_ stream, uint maxbits, uint maxp
   uint kmin = intprec > maxprec ? intprec - maxprec : 0;
   uint bits = maxbits;
   uint i, k, m, n, c;
-
   /* encode one bit plane at a time from MSB to LSB */
   for (k = intprec, n = 0; bits && k-- > kmin;) {
     /* step 1: encode first n bits of bit plane #k */
@@ -238,6 +237,7 @@ _t1(encode_many_ints_prec, UInt)(bitstream* restrict_ stream, uint maxprec, cons
 static uint
 _t1(encode_ints, UInt)(bitstream* restrict_ stream, uint maxbits, uint maxprec, const UInt* restrict_ data, uint size)
 {
+
   /* use fastest available encoder implementation */
   if (with_maxbits(maxbits, maxprec, size)) {
     /* rate constrained path: encode partial bit planes */
