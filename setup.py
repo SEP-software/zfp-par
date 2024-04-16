@@ -17,5 +17,10 @@ setup(
     author="Peter Lindstrom, Danielle Asher",
     author_email="zfp@llnl.gov",
     url="https://zfp.llnl.gov",
+    package_data={
+        'zfpy': ['lib/*.so'],  # Replace 'your_package_name' with the name of your actual package
+    },
     description="zfp compression in Python",
+    
 )
+

@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/testzfp.dir/testzfp.cpp.o -o ../bin/testzfp  -Wl,-rpath,/home/jupyter/Src/zfp/src/_skbuild/linux-x86_64-3.10/cmake-build/lib ../lib/libzfp.so.1.0.1

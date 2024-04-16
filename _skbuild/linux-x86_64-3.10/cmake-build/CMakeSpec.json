@@ -1,0 +1,1 @@
+{"args": ["/tmp/pip-build-env-m0lnk_3q/overlay/lib/python3.10/site-packages/cmake/data/bin/cmake", "-DINSTALL_INCLUDE_FILES=NO", "-DBUILD_PIP=YES", "-DZFP_WITH_OPENMP=yes", "-DCMAKE_BUILD_TYPE:STRING=Release"], "version": "3.29.2", "environment": {"PYTHONNOUSERSITE": "1", "PYTHONPATH": "/tmp/pip-build-env-m0lnk_3q/site"}}
