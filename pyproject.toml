@@ -10,7 +10,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "zfpy"
-version = "1.0.2"
+version = "1.0.3"
 description="zfp compression in Python"
 authors=[{ name="Peter Lindstrom, Danielle Asher", email="zfp@llnl.gov"}]
 
