@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/testviews.dir/testviews.cpp.o -o ../bin/testviews  -Wl,-rpath,/home/user/zfp-par/build/lib ../lib/libzfp.so.1.0.1 /usr/lib/gcc/x86_64-linux-gnu/13/libgomp.so /usr/lib/x86_64-linux-gnu/libpthread.a 

@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/user/zfp-par/include/zfp/bitstream.h
+stddef.h
+-
+zfp/internal/zfp/types.h
+/home/user/zfp-par/include/zfp/zfp/internal/zfp/types.h
+zfp/internal/zfp/system.h
+/home/user/zfp-par/include/zfp/zfp/internal/zfp/system.h
+
+/home/user/zfp-par/include/zfp/internal/zfp/system.h
+
+/home/user/zfp-par/include/zfp/internal/zfp/types.h
+cstdint
+-
+cinttypes
+-
+stdint.h
+-
+inttypes.h
+-
+

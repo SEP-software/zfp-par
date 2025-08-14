@@ -1,18 +1,23 @@
-
-dependencies=[
-'cython>=0.22',
-'numpy>=1.8.0',
-'multiprocess']
-
 [build-system]
-requires = ["setuptools", "wheel", "scikit-build==0.17.6", "cmake", "Cython>=0.22","numpy>=1.8.0"]
-build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core", "cmake", "cython>=0.22", "numpy>=1.8.0"]
+build-backend = "scikit_build_core.build"
 
 [project]
 name = "zfpy"
 version = "1.0.3"
-description="zfp compression in Python"
-authors=[{ name="Peter Lindstrom, Danielle Asher", email="zfp@llnl.gov"}]
-
+description = "zfp compression in Python"
+authors = [{ name = "Peter Lindstrom, Danielle Asher", email = "zfp@llnl.gov" }]
 license = { text = "MIT License" }
+dependencies = [
+    "numpy>=1.8.0",
+    "multiprocess"
+]
 
+[tool.scikit-build]
+cmake.args = [
+    "-DINSTALL_INCLUDE_FILES=NO",
+    "-DBUILD_PIP=YES",
+    "-DZFP_WITH_OPENMP=yes",
+    "-DBUILD_ZFPY=ON"
+]
+wheel.packages = ["zfpy"]

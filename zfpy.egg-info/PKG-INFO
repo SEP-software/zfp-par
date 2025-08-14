@@ -1,6 +1,6 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: zfpy
-Version: 1.0.2
+Version: 1.0.3
 Summary: zfp compression in Python
 Home-page: https://zfp.llnl.gov
 Author: Peter Lindstrom, Danielle Asher
@@ -8,3 +8,6 @@ Author-email: "Peter Lindstrom, Danielle Asher" <zfp@llnl.gov>
 License: MIT License
 License-File: LICENSE
 License-File: NOTICE
+Dynamic: author
+Dynamic: home-page
+Dynamic: license-file

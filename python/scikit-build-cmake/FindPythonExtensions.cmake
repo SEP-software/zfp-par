@@ -254,46 +254,17 @@ endif()
 include(targetLinkLibrariesWithDynamicLookup)
 
 set(_command "
-import distutils.sysconfig
-import itertools
+import sysconfig
 import os
-import os.path
-import site
 import sys
-
-result = None
-rel_result = None
-candidate_lists = []
-
-try:
-    candidate_lists.append((distutils.sysconfig.get_python_lib(),))
-except AttributeError: pass
-
-try:
-    candidate_lists.append(site.getsitepackages())
-except AttributeError: pass
-
-try:
-    candidate_lists.append((site.getusersitepackages(),))
-except AttributeError: pass
-
-candidates = itertools.chain.from_iterable(candidate_lists)
-
-for candidate in candidates:
-    rel_candidate = os.path.relpath(
-      candidate, sys.prefix)
-    if not rel_candidate.startswith(\"..\"):
-        result = candidate
-        rel_result = rel_candidate
-        break
 
 sys.stdout.write(\";\".join((
     os.sep,
     os.pathsep,
     sys.prefix,
-    result,
-    rel_result,
-    distutils.sysconfig.get_config_var('EXT_SUFFIX')
+    sysconfig.get_path('purelib'),
+    os.path.relpath(sysconfig.get_path('purelib'), sys.prefix),
+    sysconfig.get_config_var('EXT_SUFFIX')
 )))
 ")
 

@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/testzfp.dir/testzfp.cpp.o -o ../bin/testzfp  -Wl,-rpath,/home/user/zfp-par/build/lib ../lib/libzfp.so.1.0.1 
