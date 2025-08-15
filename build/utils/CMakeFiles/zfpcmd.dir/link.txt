@@ -1,1 +1,0 @@
-/usr/bin/cc -O3 -DNDEBUG CMakeFiles/zfpcmd.dir/zfp.c.o -o ../bin/zfp  -Wl,-rpath,/home/user/zfp-par/build/lib: ../lib/libzfp.so.1.0.1 -lm 

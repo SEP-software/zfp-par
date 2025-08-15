@@ -21,3 +21,4 @@ cmake.args = [
     "-DBUILD_ZFPY=ON"
 ]
 wheel.packages = ["zfpy"]
+install.components = ["zfp", "zfpy_c"]

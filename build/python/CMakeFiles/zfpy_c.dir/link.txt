@@ -1,1 +1,0 @@
-/usr/bin/cc -fPIC -O3 -DNDEBUG -Wl,--unresolved-symbols=ignore-all -Wl,--version-script="/home/user/zfp-par/build/python/CMakeFiles/zfpy_c-version-script.map" -shared  -o ../bin/zfpy_c.cpython-312-x86_64-linux-gnu.so CMakeFiles/zfpy_c.dir/zfpy_c.c.o  -Wl,-rpath,/home/user/zfp-par/build/lib: ../lib/libzfp.so.1.0.1 

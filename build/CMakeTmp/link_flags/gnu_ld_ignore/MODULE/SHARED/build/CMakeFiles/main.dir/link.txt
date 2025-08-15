@@ -1,1 +1,0 @@
-/usr/bin/cc -Wl,--export-dynamic -rdynamic CMakeFiles/main.dir/main.c.o -o main  -Wl,-rpath,/home/user/zfp-par/build/CMakeTmp/link_flags/gnu_ld_ignore/MODULE/SHARED/build libnumber.so -ldl 

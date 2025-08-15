@@ -21,6 +21,9 @@ add_cython_target(zfpy_c zfpy_c.pyx C PY3)
 add_library(zfpy_c MODULE ${zfpy_c})
 target_link_libraries(zfpy_c zfp)
 python_extension_module(zfpy_c)
+set_target_properties(zfpy_c PROPERTIES
+  INSTALL_RPATH "\$ORIGIN"
+)
 
 # Build to the current binary dir to avoid conflicts with other libraries named zfp
 set(PYLIB_BUILD_DIR "${CMAKE_BINARY_DIR}/bin" CACHE PATH "Directory where zfp python library will be built")
@@ -35,4 +38,5 @@ if(BUILD_PIP)
 else(BUILD_PIP)
     message("NO REDIRECTION???")
 endif()
-install(TARGETS zfpy_c LIBRARY DESTINATION ${python_install_lib_dir})
+install(TARGETS zfpy_c LIBRARY DESTINATION ${python_install_lib_dir} COMPONENT zfpy_c)
+install(TARGETS zfp LIBRARY DESTINATION ${python_install_lib_dir} COMPONENT zfpy_c)

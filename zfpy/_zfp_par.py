@@ -1,5 +1,6 @@
 import numpy as np
-from multiprocess import RawArray, Pool, cpu_count
+from multiprocess import RawArray, cpu_count
+from multiprocessing.pool import ThreadPool as Pool
 import math
 from zfpy_c import(zfp_chunkit,
                        compress_numpy_portion, 
@@ -140,7 +141,6 @@ class zfp_p:
         
         if nthreads==-1:
             nthreads=cpu_count()
-        print("IN",self._np_array[0,0,0])
         global compress_data
         compress_data = self._compress_data
         # Initialize multiprocessing pool
@@ -154,8 +154,7 @@ class zfp_p:
 
         # Close the pool and wait for tasks to complete
         pool.close()
-        pool.join()        
-        print("OUT",self._np_array[0,0,0])
+        pool.join()
 
 def write_json_header(filename, dimensions, block_splits, compressed_files):
     """
